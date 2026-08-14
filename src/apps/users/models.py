@@ -185,3 +185,32 @@ class ChangeEmailLogs(models.Model):
         if self.error_expired_at >= timezone.now():
             return self.error_expired_at
         return False
+
+
+
+#---------------------------------------------------------------
+
+# Region / City / DeliveryZone / Address models
+# These should reference the single `User` model defined above.
+class Region(models.Model):
+    name = models.CharField(max_length=255)
+
+class City(models.Model):
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='cities')
+    name = models.CharField(max_length=255)
+    delivery_zone_id = models.IntegerField(null=True, blank=True)  # Linked to delivery zones
+
+class DeliveryZone(models.Model):
+    name = models.CharField(max_length=255)
+    base_cost = models.DecimalField(max_digits=12, decimal_places=2)
+    per_kg = models.DecimalField(max_digits=12, decimal_places=2)
+
+class Address(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    company_name = models.CharField(max_length=255, blank=True)
+    region = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    street = models.CharField(max_length=255)
+    house = models.CharField(max_length=50)
+    phone = models.CharField(max_length=20)
+    is_default = models.BooleanField(default=False)
