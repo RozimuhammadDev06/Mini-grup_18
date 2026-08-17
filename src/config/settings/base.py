@@ -42,7 +42,11 @@ INSTALLED_APPS = [
 
     # own apps
     'apps.utils',
-    'apps.users'
+    'apps.users',
+    'apps.catalog',
+    'apps.content',
+    'apps.engagement',
+    'apps.orders',
 ]
 
 MIDDLEWARE = [
