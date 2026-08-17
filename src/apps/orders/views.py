@@ -83,3 +83,60 @@ class OrderViewSet(viewsets.ModelViewSet):
             user=self.request.user,
             number=f"SO-{1000 + Order.objects.count()}"
         )
+
+
+
+
+
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from django.db import transaction
+from .models import Order, OrderItem
+from .serializers import OrderSerializer, OrderCreateSerializer
+from apps.orders.models import Cart # Import Cart to move items to Order
+
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can only view their own order history
+        return Order.objects.filter(user=self.request.user).prefetch_related('items', 'items__product')
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return OrderCreateSerializer
+        return OrderSerializer
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        """
+        Creates the Order, copies Cart items to OrderItems (with snapshots),
+        and clears the Cart.
+        """
+        user = self.request.user
+        
+        # 1. Generate a unique order number
+        order_number = f"SO-{Order.objects.filter(user=user).count() + 1000}"
+
+        # 2. Save the main Order
+        order = serializer.save(user=user, number=order_number)
+
+        # 3. Find the user's current cart
+        cart = Cart.objects.filter(user=user).first()
+        if not cart:
+            # If no cart, return an empty order (or raise error based on business logic)
+            pass
+        else:
+            # 4. Move items from Cart to OrderItem with snapshots
+            for cart_item in cart.items.all():
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    name_snapshot=cart_item.product.name,
+                    article_snapshot=cart_item.product.article,
+                    price=cart_item.price,
+                    quantity=cart_item.quantity
+                )
+            # 5. Clear the cart
+            cart.items.all().delete()
