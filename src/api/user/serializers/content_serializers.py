@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Promotion, Banner, FAQ, StaticPage
+from apps.content.models import Article, Promotion, Banner, FAQ, StaticPage
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,7 +9,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
-        fields = ['id', 'title', 'slug', 'body', 'image', 'discount_label', 'valid_until', 'category']
+        fields = '__all__'
 
 class BannerSerializer(serializers.ModelSerializer):
     class Meta:

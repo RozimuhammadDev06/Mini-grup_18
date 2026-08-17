@@ -1,16 +1,15 @@
 from rest_framework import viewsets
-from .models import Article, Promotion, Banner, FAQ, StaticPage
-from .serializers import ArticleSerializer, PromotionSerializer, BannerSerializer, FAQSerializer, StaticPageSerializer
+from apps.content.models import Article, Promotion, Banner, FAQ, StaticPage
+from api.user.serializers.content_serializers import ArticleSerializer, PromotionSerializer, BannerSerializer, FAQSerializer, StaticPageSerializer
 
 class ArticleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     lookup_field = 'slug'
 
-class PromotionViewSet(viewsets.ReadOnlyModelViewSet):
+class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
-    lookup_field = 'slug'
 
 class BannerViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Banner.objects.all().order_by('sort')

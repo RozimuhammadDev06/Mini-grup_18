@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Category, Brand, Product
-from .serializers import CategorySerializer, BrandSerializer, ProductListSerializer, ProductDetailSerializer
+from apps.catalog.models import Category, Brand, Product
+from api.serializers import CategorySerializer, BrandSerializer, ProductListSerializer, ProductDetailSerializer
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.filter(is_active=True)
