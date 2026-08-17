@@ -1,53 +1,102 @@
 from rest_framework import serializers
-from apps.engagement.models import Review, Wishlist, Compare, Lead
-from api.user.serializers.catalog_serializers import ProductListSerializer
+
+from apps.engagement.models import (
+    Review,
+    Wishlist,
+    Compare,
+    Lead,
+)
+
+from ..serializers.catalog_serializers import ProductListSerializer
+
+
+# =============================================================
+# REVIEW SERIALIZER
+# =============================================================
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = [
+            "id",
+            "user",
+            "product",
+            "author_name",
+            "rating",
+            "comment",
+            "is_published",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "created_at",
+        ]
 
-    def validate_rating(self, value):
-        if value < 1 or value > 5:
-            raise serializers.ValidationError("Rating must be between 1 and 5.")
-        return value
+
+# =============================================================
+# WISHLIST SERIALIZER
+# =============================================================
 
 class WishlistSerializer(serializers.ModelSerializer):
-    product_details = ProductListSerializer(source='product', read_only=True)
+    product_details = ProductListSerializer(
+        source="product",
+        read_only=True,
+    )
 
     class Meta:
         model = Wishlist
-        fields = ['id', 'product', 'product_details']
+        fields = [
+            "id",
+            "product",
+            "product_details",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+        ]
+
+
+# =============================================================
+# COMPARE SERIALIZER
+# =============================================================
 
 class CompareSerializer(serializers.ModelSerializer):
-    product_details = ProductListSerializer(source='product', read_only=True)
-
     class Meta:
         model = Compare
-        fields = ['id', 'product', 'category', 'session_key', 'product_details']
-        read_only_fields = ['id']
+        fields = [
+            "id",
+            "user",
+            "product",
+            "session_key",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "created_at",
+        ]
+
+
+# =============================================================
+# LEAD SERIALIZER
+# =============================================================
 
 class LeadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
-        fields = ['id', 'type', 'name', 'phone', 'product_id', 'consent', 'status', 'created_at']
-        read_only_fields = ['id', 'status', 'created_at']
-
-    def validate_consent(self, value):
-        if not value:
-            raise serializers.ValidationError("You must provide consent to process your data.")
-        return value
-
-
-from rest_framework import serializers
-from .models import Wishlist
-from apps.catalog.serializers import ProductListSerializer
-
-class WishlistSerializer(serializers.ModelSerializer):
-    # This includes full product info (name, price, image) in the wishlist response
-    product_details = ProductListSerializer(source='product', read_only=True)
-
-    class Meta:
-        model = Wishlist
-        fields = ['id', 'product', 'product_details', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "message",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]

@@ -16,12 +16,12 @@ class UserAdmin(BaseUserAdmin):
         ('Personal info', {'fields': (
         'first_name', 'last_name', 'telegram_id')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Important dates', {'fields': ('last_login', 'created_at')}),
     )
     
-    ordering = ('date_joined',)
+    ordering = ('-created_at',)
 
-    readonly_fields = ('date_joined', 'last_login')
+    readonly_fields = ('created_at', 'last_login')
 
 
 admin.site.register(User, UserAdmin)
