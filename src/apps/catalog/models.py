@@ -70,3 +70,55 @@ class Stock(models.Model):
     quantity = models.IntegerField(default=0)
     status = models.CharField(max_length=50) # e.g., 'in_stock', 'out_of_stock'
     synced_at = models.DateTimeField(auto_now=True)
+
+
+from django.db import models
+
+class Category(models.Model):
+    """
+    Hierarchical category structure supporting nested children.
+    """
+    parent = models.ForeignKey(
+        'self', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True, 
+        related_name='children'
+    )
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    sort = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['sort']
+
+    def __str__(self):
+        return self.name
+
+class Product(models.Model):
+    """
+    The core product model for the catalog.
+    Note: Uses attrs_json for fast attribute rendering.
+    """
+    category = models.ForeignKey(
+        Category, 
+        on_delete=models.PROTECT, 
+        related_name='products'
+    )
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    article = models.CharField(max_length=100, unique=True) # SKU
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+    old_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    attrs_json = models.JSONField(default=dict, blank=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
