@@ -170,3 +170,31 @@ class Lead(models.Model):
     def __str__(self):
         return f"{self.name} — {self.email}"
 
+
+
+from django.db import models
+from django.conf import settings
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='wishlist'
+    )
+    product = models.ForeignKey(
+        'catalog.Product', 
+        on_delete=models.CASCADE, 
+        related_name='wishlisted_by'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Prevent a user from adding the same product multiple times
+        unique_together = ('user', 'product')
+        verbose_name = "Wishlist Item"
+        verbose_name_plural = "Wishlist Items"
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.product.name}"
+
+# (Keep other engagement models like Review, Compare, Lead here as well)

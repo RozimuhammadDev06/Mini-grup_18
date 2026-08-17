@@ -205,12 +205,34 @@ class DeliveryZone(models.Model):
     base_cost = models.DecimalField(max_digits=12, decimal_places=2)
     per_kg = models.DecimalField(max_digits=12, decimal_places=2)
 
+
+
+from django.db import models
+from django.conf import settings
+
 class Address(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
-    company_name = models.CharField(max_length=255, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='addresses'
+    )
+    company_name = models.CharField(max_length=255, blank=True, null=True)
     region = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     street = models.CharField(max_length=255)
     house = models.CharField(max_length=50)
     phone = models.CharField(max_length=20)
     is_default = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "User Address"
+        verbose_name_plural = "User Addresses"
+
+    def save(self, *args, **kwargs):
+        # If this address is set as default, unset other default addresses for this user
+        if self.is_default:
+            Address.objects.filter(user=self.user, is_default=True).update(is_default=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.city}, {self.street}"
