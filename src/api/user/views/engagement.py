@@ -1,11 +1,12 @@
 
 
 from rest_framework import viewsets, permissions
-from .models import Review, Wishlist, Compare, Lead
-from .serializers import ReviewSerializer, WishlistSerializer, CompareSerializer, LeadSerializer
+from apps.engagement.models import Review, Wishlist, Compare, Lead
+from api.serializers import ReviewSerializer, WishlistSerializer, CompareSerializer, LeadSerializer
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.filter(is_published=True)
+    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     def get_permissions(self):

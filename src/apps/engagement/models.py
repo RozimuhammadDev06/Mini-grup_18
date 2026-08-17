@@ -3,43 +3,70 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
+# class Review(models.Model):
+#     """
+#     A customer's review and rating for a product.
+#     """
+
+#     product = models.ForeignKey(
+#         "catalog.Product",
+#         on_delete=models.CASCADE,
+#         related_name="reviews",
+#     )
+
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         related_name="reviews",
+#     )
+
+#     rating = models.PositiveSmallIntegerField(
+#         validators=[
+#             MinValueValidator(1),
+#             MaxValueValidator(5),
+#         ],
+#         help_text="Rating from 1 to 5.",
+#     )
+
+#     comment = models.TextField(
+#         blank=True,
+#         help_text="Customer's review.",
+#     )
+
+#     is_published = models.BooleanField(
+#         default=False,
+#         help_text="Whether this review is visible to customers.",
+#     )
+
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+
+from django.db import models
+from django.conf import settings
+
 class Review(models.Model):
-    """
-    A customer's review and rating for a product.
-    """
-
-    product = models.ForeignKey(
-        "catalog.Product",
-        on_delete=models.CASCADE,
-        related_name="reviews",
-    )
-
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="reviews",
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='reviews',
+        null=True, 
+        blank=True
     )
-
-    rating = models.PositiveSmallIntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(5),
-        ],
-        help_text="Rating from 1 to 5.",
+    product = models.ForeignKey(
+        'catalog.Product',  # Agar katalog ilovasida Product bo'lsa
+        on_delete=models.CASCADE, 
+        related_name='reviews',
+        null=True,
+        blank=True
     )
-
-    comment = models.TextField(
-        blank=True,
-        help_text="Customer's review.",
-    )
-
-    is_published = models.BooleanField(
-        default=False,
-        help_text="Whether this review is visible to customers.",
-    )
-
+    author_name = models.CharField(max_length=255, null=True, blank=True)
+    rating = models.IntegerField()
+    comment = models.TextField()
+    is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.product} — {self.rating}/5"
 
     class Meta:
         ordering = ["-created_at"]

@@ -2,8 +2,8 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import Cart, CartItem, Order
-from .serializers import CartSerializer, CartItemSerializer, OrderSerializer
+from apps.orders.models import Cart, CartItem, Order
+from api.serializers import CartSerializer, CartItemSerializer, OrderSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):
