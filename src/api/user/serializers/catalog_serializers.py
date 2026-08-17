@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Brand, Product, ProductImage, Stock, Attribute, ProductAttribute
+from apps.catalog.models import Category, Brand, Product, ProductImage, Stock, Attribute, ProductAttribute
 
 class CategorySerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
