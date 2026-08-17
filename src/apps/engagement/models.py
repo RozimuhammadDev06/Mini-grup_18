@@ -1,72 +1,34 @@
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-
-# class Review(models.Model):
-#     """
-#     A customer's review and rating for a product.
-#     """
-
-#     product = models.ForeignKey(
-#         "catalog.Product",
-#         on_delete=models.CASCADE,
-#         related_name="reviews",
-#     )
-
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name="reviews",
-#     )
-
-#     rating = models.PositiveSmallIntegerField(
-#         validators=[
-#             MinValueValidator(1),
-#             MaxValueValidator(5),
-#         ],
-#         help_text="Rating from 1 to 5.",
-#     )
-
-#     comment = models.TextField(
-#         blank=True,
-#         help_text="Customer's review.",
-#     )
-
-#     is_published = models.BooleanField(
-#         default=False,
-#         help_text="Whether this review is visible to customers.",
-#     )
-
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-from django.db import models
-from django.conf import settings
 
 class Review(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='reviews',
-        null=True, 
-        blank=True
-    )
-    product = models.ForeignKey(
-        'catalog.Product',  # Agar katalog ilovasida Product bo'lsa
-        on_delete=models.CASCADE, 
-        related_name='reviews',
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reviews",
         null=True,
-        blank=True
+        blank=True,
     )
-    author_name = models.CharField(max_length=255, null=True, blank=True)
+
+    product = models.ForeignKey(
+        "catalog.Product",
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        null=True,
+        blank=True,
+    )
+
+    author_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
+
     rating = models.IntegerField()
     comment = models.TextField()
     is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.product} — {self.rating}/5"
 
     class Meta:
         ordering = ["-created_at"]
@@ -121,8 +83,8 @@ class Compare(models.Model):
     """
     Products selected for comparison.
 
-    Authenticated users are identified by `user`.
-    Guests are identified by `session_key`.
+    Authenticated users are identified by user.
+    Guests are identified by session_key.
     """
 
     user = models.ForeignKey(
@@ -169,26 +131,17 @@ class Lead(models.Model):
     Contact information submitted by a potential customer.
     """
 
-    name = models.CharField(
-        max_length=150,
-    )
-
+    name = models.CharField(max_length=150)
     email = models.EmailField()
-
-    phone = models.CharField(
-        max_length=30,
-        blank=True,
-    )
-
-    message = models.TextField(
-        blank=True,
-    )
+    phone = models.CharField(max_length=30, blank=True)
+    message = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
+
         indexes = [
             models.Index(fields=["email"]),
             models.Index(fields=["created_at"]),
@@ -196,5 +149,3 @@ class Lead(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.email}"
-
-
