@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Cart, CartItem, Order, OrderItem, PromoCode, DiscountTier
-from apps.catalog.serializers import ProductListSerializer
+from apps.orders.models import Cart, CartItem, Order, OrderItem, PromoCode, DiscountTier
+from api.user.serializers.catalog_serializers import ProductListSerializer
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_details = ProductListSerializer(source='product', read_only=True)

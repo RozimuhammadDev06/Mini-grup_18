@@ -9,15 +9,20 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/')
     published_at = models.DateTimeField()
 
+from django.db import models
+
 class Promotion(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     body = models.TextField()
-    image = models.ImageField(upload_to='promotions/')
-    discount_label = models.CharField(max_length=50)
-    valid_until = models.DateField()
-    category = models.ForeignKey('catalog.Category', on_delete=models.SET_NULL, null=True)
+    image = models.CharField(max_length=255, blank=True, null=True) # yoki ImageField
+    discount_label = models.CharField(max_length=100, blank=True, null=True)
+    valid_until = models.DateField(blank=True, null=True)
+    category = models.ForeignKey('catalog.Category', on_delete=models.SET_NULL, null=True, blank=True)
 
+    def __str__(self):
+        return self.title
+    
 class Banner(models.Model):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to='banners/')

@@ -1,12 +1,11 @@
 from rest_framework import serializers
-from .models import Review, Wishlist, Compare, Lead
-from apps.catalog.serializers import ProductListSerializer
+from apps.engagement.models import Review, Wishlist, Compare, Lead
+from api.user.serializers.catalog_serializers import ProductListSerializer
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'author_name', 'rating', 'comment', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = '__all__'
 
     def validate_rating(self, value):
         if value < 1 or value > 5:

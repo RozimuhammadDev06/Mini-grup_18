@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Address, Region, City, DeliveryZone
+from apps.users.models import User, Address, Region, City, DeliveryZone
 
 class RegionSerializer(serializers.ModelSerializer):
     class Meta:
