@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.content.models import Article, Promotion, Banner, FAQ, StaticPage
+from apps.magazin.models import Article, Promotion, Banner, FAQ, StaticPage
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:

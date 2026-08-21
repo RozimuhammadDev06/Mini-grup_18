@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from apps.content.models import Article, Promotion, Banner, FAQ, StaticPage
+from apps.magazin.models import Article, Promotion, Banner, FAQ, StaticPage
 from api.user.serializers.content_serializers import ArticleSerializer, PromotionSerializer, BannerSerializer, FAQSerializer, StaticPageSerializer
 
 class ArticleViewSet(viewsets.ReadOnlyModelViewSet):
