@@ -188,3 +188,25 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_IGNORE_RESULT = False
 CELERY_TASK_SOFT_TIME_LIMIT = 60
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'СтройОптТорг API',
+    'DESCRIPTION': 'Wholesale/Retail Construction Materials E-commerce Platform API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_PATCH': True,
+    'COMPONENT_NO_READ_ONLY_REQUIRED': True,
+    'SECURITY': [
+        {
+            'jwt': [],
+        }
+    ],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'jwt': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
+}
