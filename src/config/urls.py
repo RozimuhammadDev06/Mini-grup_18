@@ -13,10 +13,8 @@ urlpatterns = [
     
     # --- API App Routes ---
     path('api/users/', include('apps.users.urls')),
-    path('api/catalog/', include('apps.catalog.urls')),
-    path('api/orders/', include('apps.orders.urls')),
-    path('api/content/', include('apps.content.urls')),
-    path('api/engagement/', include('apps.engagement.urls')),
+    # Central API router (categories, products, carts, orders)
+    path('api/', include('api.urls')),
 
     # --- Swagger/OpenAPI Documentation ---
     # 1. The raw schema endpoint (JSON/YAML)

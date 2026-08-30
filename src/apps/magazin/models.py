@@ -9,7 +9,7 @@ class Region(models.Model):
         return self.name
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'
 
 
 class Category(models.Model):
@@ -23,7 +23,7 @@ class Category(models.Model):
         return self.name
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'
 
 
 class Brand(models.Model):
@@ -35,7 +35,7 @@ class Brand(models.Model):
         return self.name
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'
 
 
 class Product(models.Model):
@@ -55,7 +55,7 @@ class Product(models.Model):
         return self.name
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'
 
 
 class Cart(models.Model):
@@ -68,7 +68,7 @@ class Cart(models.Model):
         return f"Cart {self.id}"
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'
 
 
 class CartItem(models.Model):
@@ -81,7 +81,7 @@ class CartItem(models.Model):
         return f"{self.product.name} - {self.quantity}"
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'
 
 
 class Order(models.Model):
@@ -96,4 +96,4 @@ class Order(models.Model):
         return f"Order #{self.number}"
 
     class Meta:
-        app_label = 'shop'
+        app_label = 'magazin'

@@ -22,9 +22,13 @@ from django.db.models import Q
 from apps.catalog.models import (
     Category,
     Product,
-    Compare,
     CategoryAttribute,
     Attribute,
+    AttributeValue,
+    ProductAttribute,
+    ProductImage,
+    Stock,
+    Compare,
 )
 
 from ..serializers.catalog_serializers import (

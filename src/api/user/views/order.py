@@ -40,7 +40,7 @@ class CartViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        from apps.catalog.models import Product
+        from apps.magazin.models import Product
 
         try:
             product = Product.objects.get(id=product_id)

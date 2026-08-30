@@ -18,29 +18,6 @@ from .users import (
 	AddressViewSet,
 )
 
-# Catalog views
-from .catalog import (
-	CategoryViewSet,
-	ProductViewSet,
-	CompareViewSet,
-)
-
-# Content views
-from .content import (
-	ArticleViewSet,
-	PromotionViewSet,
-	BannerViewSet,
-	FAQViewSet,
-	StaticPageViewSet,
-)
-
-# Engagement views (avoid importing CompareViewSet to prevent name clash)
-from .engagement import (
-	ReviewViewSet,
-	WishlistViewSet,
-	LeadViewSet,
-)
-
 __all__ = [
 	# users
 	"RegisterView",
@@ -53,18 +30,4 @@ __all__ = [
 	"UserProfileView",
 	"ChangePasswordView",
 	"AddressViewSet",
-	# catalog
-	"CategoryViewSet",
-	"ProductViewSet",
-	"CompareViewSet",
-	# content
-	"ArticleViewSet",
-	"PromotionViewSet",
-	"BannerViewSet",
-	"FAQViewSet",
-	"StaticPageViewSet",
-	# engagement
-	"ReviewViewSet",
-	"WishlistViewSet",
-	"LeadViewSet",
 ]

@@ -2,7 +2,7 @@ from .base import *
 from datetime import timedelta
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['FixingTools.pythonanywhere.com']
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=21),
