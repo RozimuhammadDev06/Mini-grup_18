@@ -12,7 +12,7 @@ All serializers work together in one file — replace the whole file with this.
 """
 
 from rest_framework import serializers
-from apps.catalog.models import (
+from apps.magazin.models import (
     Category,
     Brand,
     Attribute,

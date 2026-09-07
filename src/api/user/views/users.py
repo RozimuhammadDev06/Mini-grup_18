@@ -23,7 +23,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
 from django.conf import settings
 
-from apps.users.models import User, UserOTPVerifications, Address
+from apps.users.models import User, UserOTPVerifications
 from ..serializers.users_serializers import (
     RegisterSerializer,
     VerifyCodeSerializer,
