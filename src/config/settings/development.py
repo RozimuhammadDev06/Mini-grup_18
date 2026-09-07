@@ -2,7 +2,11 @@ from .base import *
 from datetime import timedelta
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['FixingTools.pythonanywhere.com'],
+CSRF_TRUSTED_ORIGINS = [
+    "https://fixingtools.pythonanywhere.com",
+]
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=21),
