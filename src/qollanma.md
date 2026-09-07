@@ -1,5 +1,5 @@
 Albatta, ushbu qo'llanmani loyihangizning `README.md` fayliga qo'shish uchun qulay va tushunarli formatda tayyorlab berdim.
-
+https://documenter.getpostman.com/view/53645476/2sBYAuSB2B
 ---
 
 # 🚀 Loyihani ishga tushirish bo'yicha qo'llanma
