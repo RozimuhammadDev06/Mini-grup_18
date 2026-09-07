@@ -1,18 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Import Region model directly to avoid unresolved string references during checks
-try:
-    from apps.magazin.models import Region
-except Exception:
-    Region = None
-
-
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     full_name = models.CharField(max_length=255, blank=True, null=True)
-    region = models.ForeignKey(Region or 'magazin.Region', on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -86,7 +78,6 @@ class ChangeEmailLogs(models.Model):
     class Meta:
         app_label = 'users'
 
-
 class Region(models.Model):
     name = models.CharField(max_length=255)
 
@@ -94,19 +85,7 @@ class Region(models.Model):
         return self.name
 
     class Meta:
-        app_label = 'users'
-
-
-class City(models.Model):
-    region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    delivery_zone = models.ForeignKey('DeliveryZone', on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        app_label = 'users'
+        app_label = "users"
 
 
 class DeliveryZone(models.Model):
@@ -118,14 +97,50 @@ class DeliveryZone(models.Model):
         return self.name
 
     class Meta:
-        app_label = 'users'
+        app_label = "users"
+
+
+class City(models.Model):
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.CASCADE,
+        related_name="cities",
+    )
+    name = models.CharField(max_length=255)
+    delivery_zone = models.ForeignKey(
+        DeliveryZone,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="cities",
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        app_label = "users"
 
 
 class Address(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="addresses",
+    )
     company_name = models.CharField(max_length=255, blank=True, null=True)
-    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
-    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    city = models.ForeignKey(
+        City,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     street = models.CharField(max_length=255, blank=True, null=True)
     house = models.CharField(max_length=100, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -136,4 +151,4 @@ class Address(models.Model):
         return f"Address {self.id} for {self.user.username}"
 
     class Meta:
-        app_label = 'users'
+        app_label = "users"
