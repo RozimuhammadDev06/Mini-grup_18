@@ -2,7 +2,12 @@ from .base import *
 from datetime import timedelta
 
 
-ALLOWED_HOSTS = ['FixingTools.pythonanywhere.com'],
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "fixingtools.pythonanywhere.com",
+]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://fixingtools.pythonanywhere.com",
 ]

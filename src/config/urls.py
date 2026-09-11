@@ -8,8 +8,11 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from django.urls import include, path
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("api/v1/", include("api.user.urls")),
+
     
     # --- API App Routes ---
     path('api/users/', include('apps.users.urls')),
