@@ -29,13 +29,18 @@ class Category(models.Model):
 class Brand(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    logo = models.CharField(max_length=500, blank=True, null=True)
+    logo = models.ImageField(
+        upload_to="brands/logos/",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return self.name
 
     class Meta:
-        app_label = 'magazin'
+        app_label = "magazin"
+
 
 
 class Product(models.Model):
