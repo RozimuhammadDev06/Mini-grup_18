@@ -1,128 +1,75 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserOTPVerifications, UserOTPIDVerifications,\
-    ChangePasswordLogs, ChangeEmailLogs
 
-class UserAdmin(BaseUserAdmin):
-    list_display = ('email', 'full_name', 'is_active')
-    list_editable = ("is_active", )
-
-    search_fields = ('email', 'first_name', 'last_name', 'telegram_id')
-
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
-
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': (
-        'first_name', 'last_name', 'telegram_id')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'created_at')}),
-    )
-    
-    ordering = ('-created_at',)
-
-    readonly_fields = ('created_at', 'last_login')
+from apps.users.models import (
+    Address,
+    ChangeEmailLogs,
+    ChangePasswordLogs,
+    City,
+    DeliveryZone,
+    Region,
+    User,
+    UserOTPIDVerifications,
+    UserOTPVerifications,
+)
 
 
-admin.site.register(User, UserAdmin)
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ("id", "username", "email", "full_name", "phone", "is_active")
+    search_fields = ("username", "email", "full_name", "phone")
+    list_filter = ("is_active", "is_staff")
 
-@admin.register(UserOTPVerifications)
-class UserOTPVerificationsAdmin(admin.ModelAdmin):
+
+@admin.register(Region)
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    search_fields = ("name",)
+
+
+@admin.register(DeliveryZone)
+class DeliveryZoneAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "base_cost", "per_kg")
+    search_fields = ("name",)
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "region", "delivery_zone")
+    list_filter = ("region", "delivery_zone")
+    search_fields = ("name",)
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
-        "code",
-        "attapts",
-        "resend_attapts",
-        "for_forget_password",
-        "for_forget_password_verified",
-        "expired_at",
-        "created_at",
+        "company_name",
+        "region",
+        "city",
+        "phone",
+        "is_default",
     )
+    list_filter = ("is_default", "region", "city")
+    search_fields = ("user__username", "user__email", "company_name", "phone")
 
-    list_filter = (
-        "for_forget_password",
-        "for_forget_password_verified",
-        "created_at",
-        "expired_at",
-    )
 
-    search_fields = (
-        "user__username",
-        "user__email",
-        "code",
-    )
-
-    readonly_fields = (
-        "created_at",
-    )
-
-    ordering = ("-created_at",)
+@admin.register(UserOTPVerifications)
+class UserOTPVerificationsAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "code", "expired_at", "created_at")
+    search_fields = ("user__username", "user__email", "code")
 
 
 @admin.register(UserOTPIDVerifications)
 class UserOTPIDVerificationsAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "user",
-        "code",
-        "attapts",
-        "expired_at",
-        "created_at",
-    )
-
-    list_filter = (
-        "created_at",
-        "expired_at",
-    )
-
-    search_fields = (
-        "user__username",
-        "user__email",
-        "code",
-    )
-
-    readonly_fields = (
-        "created_at",
-    )
-
-    ordering = ("-created_at",)
+    list_display = ("id", "user", "code", "expired_at", "created_at")
+    search_fields = ("user__username", "user__email", "code")
 
 
 @admin.register(ChangePasswordLogs)
 class ChangePasswordLogsAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "user",
-        "attapts",
-        "is_changed",
-        "expired_at",
-        "error_expired_at",
-        "created_at",
-    )
-
-    list_filter = (
-        "is_changed",
-        "created_at",
-        "expired_at",
-    )
-
-    search_fields = (
-        "user__username",
-        "user__email",
-    )
-
-    readonly_fields = (
-        "created_at",
-    )
-
-    ordering = ("-created_at",)
-
-    # passwordlarni admin panelda edit qilib yubormaslik uchun
-    exclude = (
-        "old_password",
-        "new_password",
-    )
+    list_display = ("id", "user", "attapts", "is_changed", "expired_at")
+    search_fields = ("user__username", "user__email")
 
 
 @admin.register(ChangeEmailLogs)
@@ -132,30 +79,13 @@ class ChangeEmailLogsAdmin(admin.ModelAdmin):
         "user",
         "old_email",
         "new_email",
-        "code",
         "attapts",
-        "resend_attapts",
-        "is_changed",
-        "expired_at",
-        "created_at",
-    )
-
-    list_filter = (
         "is_changed",
         "created_at",
-        "expired_at",
     )
-
     search_fields = (
         "user__username",
         "user__email",
         "old_email",
         "new_email",
-        "code",
     )
-
-    readonly_fields = (
-        "created_at",
-    )
-
-    ordering = ("-created_at",)
