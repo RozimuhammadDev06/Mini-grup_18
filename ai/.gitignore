@@ -1,0 +1,13 @@
+# Ignore secret environment variables (API Keys)
+.env
+
+# Ignore Python cached files
+__pycache__/
+*.pyc
+
+# Ignore virtual environments (if installed inside this folder)
+venv/
+env/    
+
+.env
+__pycache__/
