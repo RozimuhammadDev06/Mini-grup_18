@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from google import genai
 
 load_dotenv()
-client = genai.Client(api_key=os.getenv("***REMOVED***"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # 1. Define how the AI should behave overall
 chat_config = types.GenerateContentConfig(
