@@ -10,7 +10,7 @@ load_dotenv()
 
 @lru_cache(maxsize=1)
 def get_client() -> genai.Client:
-    api_key = os.getenv("***REMOVED***")
+    api_key = os.getenv("AQ.Ab8RN6L_2tYYcz1oHgn9JCA_K9V8bbNYQcAj0rLgtLpLskx8K")
 
     if not api_key:
         raise RuntimeError(
