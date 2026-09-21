@@ -97,3 +97,10 @@ class Order(models.Model):
 
     class Meta:
         app_label = 'magazin'
+
+
+class News(models.Model):
+    product = models.ForeignKey(Product,on_delete=models.SET_NULL,related_name='news',null=True,)
+
+    def __str__(self):
+        return str(self.product)
