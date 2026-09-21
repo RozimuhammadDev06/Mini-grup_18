@@ -7,8 +7,6 @@ This module re-exports view classes defined in submodules so that
 # User / auth views
 from .users import (
 	RegisterView,
-	VerifyCodeView,
-	ResendCodeView,
 	CustomTokenObtainPairView,
 	LogoutView,
 	RequestPasswordResetView,
@@ -21,8 +19,6 @@ from .users import (
 __all__ = [
 	# users
 	"RegisterView",
-	"VerifyCodeView",
-	"ResendCodeView",
 	"CustomTokenObtainPairView",
 	"LogoutView",
 	"RequestPasswordResetView",

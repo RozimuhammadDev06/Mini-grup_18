@@ -8,8 +8,6 @@ from apps.users.models import (
     DeliveryZone,
     Region,
     User,
-    UserOTPIDVerifications,
-    UserOTPVerifications,
 )
 
 
@@ -52,18 +50,6 @@ class AddressAdmin(admin.ModelAdmin):
     )
     list_filter = ("is_default", "region", "city")
     search_fields = ("user__username", "user__email", "company_name", "phone")
-
-
-@admin.register(UserOTPVerifications)
-class UserOTPVerificationsAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "code", "expired_at", "created_at")
-    search_fields = ("user__username", "user__email", "code")
-
-
-@admin.register(UserOTPIDVerifications)
-class UserOTPIDVerificationsAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "code", "expired_at", "created_at")
-    search_fields = ("user__username", "user__email", "code")
 
 
 @admin.register(ChangePasswordLogs)
