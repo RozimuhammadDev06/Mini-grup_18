@@ -22,8 +22,6 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from api.user.views.users import (
     RegisterView,
-    VerifyCodeView,
-    ResendCodeView,
     CustomTokenObtainPairView,
     LogoutView,
     RequestPasswordResetView,
@@ -41,8 +39,8 @@ urlpatterns = [
 
     # --- Authentication URLs ---
     path('register/', RegisterView.as_view(), name='register'),
-    path('verify/', VerifyCodeView.as_view(), name='verify-code'),
-    path('resend-code/', ResendCodeView.as_view(), name='resend-code'),
+    # path('verify/', VerifyCodeView.as_view(), name='verify-code'),
+    # path('resend-code/', ResendCodeView.as_view(), name='resend-code'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', LogoutView.as_view(), name='logout'),
