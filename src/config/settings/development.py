@@ -38,6 +38,13 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Static files
+STATIC_URL = "/static/"
+
+# Directory where collectstatic will copy all static files
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Local static files created by your project
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
+    BASE_DIR / "static",
 ]
