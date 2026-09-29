@@ -1,5 +1,23 @@
 from django.conf import settings
 from django.db import models
+from decimal import Decimal
+
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+
+
+class Promotion(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    discount_value = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+    )
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
 
 
 class Region(models.Model):

@@ -1,28 +1,74 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import (
-    CategoryViewSet, BrandViewSet, ProductViewSet,
-    CartViewSet, CartItemViewSet, OrderViewSet,NewsViewSet
-)
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from apps.magazin.views import PromotionViewSet
+
+# Quyidagi importlarni sizdagi mavjud joylardan qoldiring
+from .views import (
+    BrandViewSet,
+    CartItemViewSet,
+    CartViewSet,
+    CategoryViewSet,
+    NewsViewSet,
+    OrderViewSet,
+    ProductViewSet,
+)
+
+
+router = DefaultRouter()
+
+router.register(
+    r"categories",
+    CategoryViewSet,
+    basename="category",
+)
+
+router.register(
+    r"brands",
+    BrandViewSet,
+    basename="brand",
+)
+
+router.register(
+    r"products",
+    ProductViewSet,
+    basename="product",
+)
+
+router.register(
+    r"promotions",
+    PromotionViewSet,
+    basename="promotion",
+)
+
+router.register(
+    r"carts",
+    CartViewSet,
+    basename="cart",
+)
+
+router.register(
+    r"cart-items",
+    CartItemViewSet,
+    basename="cartitem",
+)
+
+router.register(
+    r"orders",
+    OrderViewSet,
+    basename="order",
+)
+
+router.register(
+    r"news",
+    NewsViewSet,
+    basename="news",
+)
 
 
 urlpatterns = [
     path(
         "",
-        include("apps.magazin.urls"),
+        include(router.urls),
     ),
-]
-
-router = DefaultRouter()
-router.register(r'categories', CategoryViewSet)
-router.register(r'brands', BrandViewSet)
-router.register(r'products', ProductViewSet)
-router.register(r'carts', CartViewSet)
-router.register(r'cart-items', CartItemViewSet)
-router.register(r'orders', OrderViewSet)
-router.register(r'orders', NewsViewSet)
-
-urlpatterns = [
-    path('', include(router.urls)),
 ]

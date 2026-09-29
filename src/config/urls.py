@@ -14,10 +14,18 @@ from drf_spectacular.views import (
 
 from django.urls import include, path
 
+from django.contrib import admin
+from django.urls import include, path
+
+
 urlpatterns = [
-    path("api/v1/", include("api.user.urls")),
-    path("admin/", admin.site.urls ),
-    path("api/", include("api.urls")),
+    path("admin/", admin.site.urls),
+
+    # Login, register, token endpointlari
+    path("api/auth/", include("api.user.urls")),
+
+    # Product va Promotion endpointlari
+    path("api/v1/", include("api.urls")),
 
 
 
