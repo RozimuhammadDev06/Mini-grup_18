@@ -4,6 +4,15 @@ from .views import (
     CategoryViewSet, BrandViewSet, ProductViewSet,
     CartViewSet, CartItemViewSet, OrderViewSet,NewsViewSet
 )
+from django.urls import include, path
+
+
+urlpatterns = [
+    path(
+        "",
+        include("apps.magazin.urls"),
+    ),
+]
 
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet)
