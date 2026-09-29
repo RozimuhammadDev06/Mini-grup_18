@@ -2,6 +2,27 @@ from rest_framework import serializers
 from apps.magazin.models import Category, Brand, Product, Cart, CartItem, Order,News
 
 # Qolgan kodlar o'zgarishsiz qoladi...
+from rest_framework import serializers
+
+
+
+
+from rest_framework import serializers
+
+
+
+
+
+from apps.magazin.models import Product
+
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
