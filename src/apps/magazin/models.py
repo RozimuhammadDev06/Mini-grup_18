@@ -8,112 +8,16 @@ from django.utils import timezone
 
 
 class Promotion(models.Model):
-    DISCOUNT_PERCENT = "percent"
-    DISCOUNT_FIXED = "fixed"
-
-    DISCOUNT_TYPE_CHOICES = [
-        (DISCOUNT_PERCENT, "Percentage"),
-        (DISCOUNT_FIXED, "Fixed amount"),
-    ]
-
-    title = models.CharField(
-        max_length=255,
-        verbose_name="Aksiya nomi",
-    )
-
-    description = models.TextField(
-        blank=True,
-        default="",
-        verbose_name="Aksiya tavsifi",
-    )
-
-    products = models.ManyToManyField(
-        "Product",
-        blank=True,
-        related_name="promotions",
-        verbose_name="Aksiyadagi mahsulotlar",
-    )
-
-    discount_type = models.CharField(
-        max_length=20,
-        choices=DISCOUNT_TYPE_CHOICES,
-        default=DISCOUNT_PERCENT,
-    )
-
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
     discount_value = models.DecimalField(
         max_digits=12,
         decimal_places=2,
     )
-
-    start_date = models.DateTimeField(
-        default=timezone.now,
-    )
-
+    start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
 
-    is_active = models.BooleanField(
-        default=True,
-    )
-
-    image = models.ImageField(
-        upload_to="promotions/",
-        blank=True,
-        null=True,
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "Promotion"
-        verbose_name_plural = "Promotions"
-
-    def __str__(self):
-        return self.title
-
-    def clean(self):
-        if self.discount_value <= Decimal("0"):
-            raise ValidationError(
-                {
-                    "discount_value": (
-                        "Chegirma qiymati 0 dan katta bo‘lishi kerak."
-                    )
-                }
-            )
-
-        if self.discount_type == self.DISCOUNT_PERCENT:
-            if self.discount_value > Decimal("100"):
-                raise ValidationError(
-                    {
-                        "discount_value": (
-                            "Foizli chegirma 100 dan katta bo‘lishi mumkin emas."
-                        )
-                    }
-                )
-
-        if self.end_date <= self.start_date:
-            raise ValidationError(
-                {
-                    "end_date": (
-                        "Tugash sanasi boshlanish sanasidan keyin bo‘lishi kerak."
-                    )
-                }
-            )
-
-    @property
-    def is_current(self):
-        now = timezone.now()
-
-        return (
-            self.is_active
-            and self.start_date <= now <= self.end_date
-        )
 
 
 class Region(models.Model):

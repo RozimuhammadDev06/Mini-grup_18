@@ -1,29 +1,25 @@
 from rest_framework import serializers
+from django.utils import timezone
 
-from .models import Product, Brand, Category
-from rest_framework import serializers
-
-from rest_framework import serializers
-
-from .models import Product, Promotion
+from .models import Product, Promotion, Brand, Category
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    brand = serializers.StringRelatedField(read_only=True)
+    category = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Product
         fields = "__all__"
 
 
 class PromotionSerializer(serializers.ModelSerializer):
-    products = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Product.objects.all(),
-        required=False,
-    )
+    """Serializer for `Promotion` model.
 
-    is_current = serializers.BooleanField(
-        read_only=True,
-    )
+    The `Promotion` model currently defines: title, description,
+    discount_value, start_date, end_date, is_active.
+    """
+    is_current = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Promotion
@@ -31,31 +27,15 @@ class PromotionSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "products",
-            "discount_type",
             "discount_value",
             "start_date",
             "end_date",
             "is_active",
-            "image",
             "is_current",
-            "created_at",
-            "updated_at",
         ]
-        read_only_fields = [
-            "id",
-            "is_current",
-            "created_at",
-            "updated_at",
-        ]
+        read_only_fields = ["id", "is_current"]
 
-
-
-class ProductSerializer(serializers.ModelSerializer):
-	brand = serializers.StringRelatedField(read_only=True)
-	category = serializers.StringRelatedField(read_only=True)
-
-	class Meta:
-		model = Product
-		fields = '__all__'
+    def get_is_current(self, obj):
+        now = timezone.now()
+        return obj.start_date <= now <= obj.end_date
 

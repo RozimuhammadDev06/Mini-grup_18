@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
 
-class ContentConfig(AppConfig):
-    name = 'apps.magazin'
+class MagazinConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.magazin"
