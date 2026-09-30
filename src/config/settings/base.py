@@ -92,6 +92,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.APIExceptionJSONMiddleware",
+
 ]
 
 
@@ -238,7 +240,15 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": (
         "drf_spectacular.openapi.AutoSchema"
     ),
+
+    "EXCEPTION_HANDLER": (
+    "config.api_exception_handler.custom_exception_handler"
+),
+
 }
+
+
+
 
 
 # ============================================================
