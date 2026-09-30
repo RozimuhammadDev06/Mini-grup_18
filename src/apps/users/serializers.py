@@ -20,18 +20,69 @@ class DeliveryZoneSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'base_cost', 'per_kg']
 
 
-class AddressSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
+from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
+from .models import Address
+
+
+User = get_user_model()
+
+
+class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = ['id', 'user', 'company_name', 'region', 'city', 'street', 'house', 'phone', 'is_default']
+        fields = [
+            "id",
+            "company_name",
+            "region",
+            "city",
+            "street",
+            "house",
+            "phone",
+            "is_default",
+        ]
+        read_only_fields = [
+            "id",
+        ]
+
+    def validate_phone(self, value):
+        if not value:
+            return value
+
+        if not value.startswith("+") and not value.isdigit():
+            raise serializers.ValidationError(
+                "Enter a valid phone number."
+            )
+
+        return value
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    full_name = serializers.ReadOnlyField()
+    addresses = AddressSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'full_name']
-        read_only_fields = ['id', 'email', 'full_name']
+
+        # Do not include username because your login is email-based.
+        fields = [
+            "id",
+            "email",
+            "phone",
+            "full_name",
+            "region",
+            "is_active",
+            "addresses",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "email",
+            "is_active",
+            "addresses",
+            "created_at",
+        ]

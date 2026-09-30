@@ -15,12 +15,28 @@ class DeliveryZoneViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DeliveryZone.objects.all()
     serializer_class = DeliveryZoneSerializer
 
-class UserProfileViewSet(viewsets.ModelViewSet):
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+from rest_framework import permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-    def get_object(self):
-        return self.request.user
+from .serializers import UserProfileSerializer
+
+
+class MyProfileView(APIView):
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def get(self, request):
+        serializer = UserProfileSerializer(
+            request.user,
+            context={
+                "request": request,
+            },
+        )
+
+        return Response(serializer.data)
+
 
 class AddressViewSet(viewsets.ModelViewSet):
     serializer_class = AddressSerializer
