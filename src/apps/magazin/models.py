@@ -1,23 +1,23 @@
 from django.conf import settings
 from django.db import models
 from decimal import Decimal
-
 from django.core.exceptions import ValidationError
-from django.db import models
 from django.utils import timezone
 
 
 class Promotion(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
-    discount_value = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-    )
+    discount_value = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        app_label = 'magazin'
 
 
 class Region(models.Model):
@@ -47,18 +47,13 @@ class Category(models.Model):
 class Brand(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    logo = models.ImageField(
-        upload_to="brands/logos/",
-        blank=True,
-        null=True,
-    )
+    logo = models.ImageField(upload_to="brands/logos/", blank=True, null=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
         app_label = "magazin"
-
 
 
 class Product(models.Model):
@@ -123,7 +118,10 @@ class Order(models.Model):
 
 
 class News(models.Model):
-    product = models.ForeignKey(Product,on_delete=models.SET_NULL,related_name='news',null=True,)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, related_name='news', null=True)
 
     def __str__(self):
         return str(self.product)
+
+    class Meta:
+        app_label = 'magazin'

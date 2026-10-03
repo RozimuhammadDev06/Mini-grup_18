@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 
-from .models import Product, Promotion, Brand, Category
+from .models import Product, Promotion, Brand, Category, Cart, CartItem, Order, News
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -38,4 +38,48 @@ class PromotionSerializer(serializers.ModelSerializer):
     def get_is_current(self, obj):
         now = timezone.now()
         return obj.start_date <= now <= obj.end_date
+
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = ["id", "product", "quantity", "price"]
+
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ["id", "user", "session_key", "promo_code_id", "updated_at", "items"]
+        read_only_fields = ["id", "user", "updated_at"]
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = "__all__"
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+
+class NewsSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = News
+        fields = "__all__"
 
