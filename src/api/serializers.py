@@ -1,20 +1,6 @@
 from rest_framework import serializers
 from apps.magazin.models import Category, Brand, Product, Cart, CartItem, Order,News
 
-# Qolgan kodlar o'zgarishsiz qoladi...
-from rest_framework import serializers
-
-
-
-
-from rest_framework import serializers
-
-
-
-
-
-from apps.magazin.models import Product
-
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -66,12 +52,27 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ['id', 'cart', 'product', 'product_id', 'quantity', 'price']
 
-class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(many=True, read_only=True)
+from rest_framework import serializers
 
+
+
+
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'session_key', 'items', 'updated_at']
+        fields = [
+            "id",
+            "user",
+            "session_key",
+            "items",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "items",
+            "updated_at",
+        ]
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:

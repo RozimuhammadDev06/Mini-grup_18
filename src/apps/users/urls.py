@@ -34,8 +34,18 @@ from api.user.views.users import (
 router = DefaultRouter()
 router.register(r'addresses', AddressViewSet, basename='user-address')
 
+from django.urls import path
+
+from .views import MyProfileView
+
+
 urlpatterns = [
-    path('', include(router.urls)),
+    path(
+        "profile/",
+        MyProfileView.as_view(),
+        name="my-profile",
+    ),
+
 
     # --- Authentication URLs ---
     path('register/', RegisterView.as_view(), name='register'),

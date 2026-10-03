@@ -210,11 +210,10 @@ MEDIA_ROOT = os.path.join(
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.BasicAuthentication",
     ],
 
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
 
     "DEFAULT_PAGINATION_CLASS": (
@@ -242,9 +241,8 @@ REST_FRAMEWORK = {
     ),
 
     "EXCEPTION_HANDLER": (
-    "config.api_exception_handler.custom_exception_handler"
-),
-
+        "config.api_exception_handler.custom_exception_handler"
+    ),
 }
 
 
@@ -326,7 +324,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = env(
-    "EMAIL_HOST",
+    "EMAIL_HOST_USER",
     default="",
 )
 
@@ -384,3 +382,32 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_IGNORE_RESULT = False
 
 CELERY_TASK_SOFT_TIME_LIMIT = 60
+
+
+
+
+FINTECHHUB_BASE_URL = env(
+    "FINTECHHUB_BASE_URL",
+    default="http://159.223.145.49:3079",
+ ).rstrip("/")
+
+FINTECHHUB_SERVICE_ID = env.int(
+    "FINTECHHUB_SERVICE_ID",
+    default=1,
+)
+
+FINTECHHUB_MERCHANT_USER_ID = env(
+    "FINTECHHUB_MERCHANT_USER_ID",
+    default="",
+)
+
+FINTECHHUB_MERCHANT_SECRET_KEY = env(
+    "FINTECHHUB_MERCHANT_SECRET_KEY",
+    default="",
+)
+
+FINTECHHUB_RETURN_URL = env(
+    "FINTECHHUB_RETURN_URL",
+    default="",
+)
+

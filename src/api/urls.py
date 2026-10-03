@@ -66,9 +66,14 @@ router.register(
 )
 
 
+from django.urls import include, path
+
+
 urlpatterns = [
     path(
         "",
-        include(router.urls),
+        include("apps.magazin.urls"),
     ),
 ]
+
+
