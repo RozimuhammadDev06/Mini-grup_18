@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 
-from .models import Product, Promotion, Brand, Category, Cart, CartItem, Order, News
-
+from .models import Product, Promotion, Brand, Category, Cart, CartItem, Order, News, Review
 
 class ProductSerializer(serializers.ModelSerializer):
     brand = serializers.StringRelatedField(read_only=True)
@@ -82,4 +81,38 @@ class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = "__all__"
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "product",
+            "product_name",
+            "user",
+            "user_email",
+            "rating",
+            "text",
+            "is_approved",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "user",
+            "user_email",
+            "product_name",
+            "is_approved",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate_rating(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5.")
+        return value
 

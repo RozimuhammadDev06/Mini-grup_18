@@ -10,7 +10,9 @@ from .views import (
     OrderViewSet,
     ProductViewSet,
     PromotionViewSet,
+    ReviewViewSet,
 )
+
 
 
 router = DefaultRouter()
@@ -55,6 +57,12 @@ router.register(
     NewsViewSet,
     basename="news",
 )
+router.register(
+    r"reviews",
+    ReviewViewSet,
+    basename="review",
+)
+
 
 
 urlpatterns = [
