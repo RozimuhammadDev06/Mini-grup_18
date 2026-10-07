@@ -3,6 +3,7 @@ from django.db import models
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.utils import timezone
 
 
 class Promotion(models.Model):
@@ -125,3 +126,43 @@ class News(models.Model):
 
     class Meta:
         app_label = 'magazin'
+
+
+class Review(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="product_reviews",
+    )
+    rating = models.PositiveSmallIntegerField()
+    text = models.TextField(blank=True, default="")
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.rating < 1 or self.rating > 5:
+            raise ValidationError(
+                "Rating must be between 1 and 5."
+            )
+
+    def __str__(self):
+        return (
+            f"{self.product.name} - "
+            f"{self.user} - {self.rating}"
+        )
+
+    class Meta:
+        app_label = "magazin"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["product", "user"],
+                name="one_review_per_user_product",
+            ),
+        ]

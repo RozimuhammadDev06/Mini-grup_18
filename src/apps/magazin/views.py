@@ -1,19 +1,29 @@
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, status
+from rest_framework.response import Response
 
-from .models import Product
-from .serializers import ProductSerializer
-from rest_framework import permissions, viewsets
-
-from .models import Product, Promotion
+from .models import (
+    Brand,
+    Cart,
+    CartItem,
+    Category,
+    News,
+    Order,
+    Product,
+    Promotion,
+    Review,
+)
 from .serializers import (
     ProductSerializer,
     PromotionSerializer,
+    CartSerializer,
+    CartItemSerializer,
+    BrandSerializer,
+    CategorySerializer,
+    OrderSerializer,
+    NewsSerializer,
+    ReviewSerializer,
 )
-from rest_framework import permissions, status, viewsets
-from rest_framework.response import Response
 
-from .models import Cart
-from .serializers import CartSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):
@@ -183,12 +193,38 @@ class PromotionViewSet(viewsets.ModelViewSet):
 
 
 
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+# Note: ProductViewSet is defined above with documentation and permissions.
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        queryset = Review.objects.select_related(
+            "product",
+            "user",
+        )
+
+        if self.action in [
+            "list",
+            "retrieve",
+        ]:
+            return queryset.filter(
+                is_approved=True,
+            )
+
+        if not self.request.user.is_authenticated:
+            return Review.objects.none()
+
+        return queryset.filter(
+            user=self.request.user,
+        )
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in [
+            "list",
+            "retrieve",
+        ]:
             return [
                 permissions.AllowAny(),
             ]
@@ -196,3 +232,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         return [
             permissions.IsAuthenticated(),
         ]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            user=self.request.user,
+            is_approved=False,
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(
+            is_approved=False,
+        )
+    
