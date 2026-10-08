@@ -26,38 +26,6 @@ from .serializers import (
 
 
 
-class CartViewSet(viewsets.ModelViewSet):
-    serializer_class = CartSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
-
-    def get_queryset(self):
-        return Cart.objects.filter(
-            user=self.request.user
-        ).prefetch_related("items")
-
-    def create(self, request, *args, **kwargs):
-        cart, created = Cart.objects.get_or_create(
-            user=request.user,
-            defaults={
-                "session_key": request.data.get(
-                    "session_key",
-                    "",
-                ),
-            },
-        )
-
-        serializer = self.get_serializer(cart)
-
-        return Response(
-            serializer.data,
-            status=(
-                status.HTTP_201_CREATED
-                if created
-                else status.HTTP_200_OK
-            ),
-        )
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -111,6 +79,32 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if self.action in ["list", "retrieve"]:
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+
+
+class CartViewSet(viewsets.ModelViewSet):
+    from .models import Cart
+    from .serializers import CartSerializer
+
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        # If user is authenticated, return or create a cart for them.
+        if request.user and request.user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(user=request.user)
+            serializer = self.get_serializer(cart)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Fallback: create anonymous cart tied to session_key if provided
+        session_key = request.data.get("session_key") or request.session.session_key
+        cart = Cart.objects.create(session_key=session_key)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class CartItemViewSet(viewsets.ModelViewSet):
