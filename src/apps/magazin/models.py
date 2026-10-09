@@ -79,12 +79,14 @@ class Product(models.Model):
 
 class Cart(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="carts",
-        null=True,
-        blank=True,
-    )
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE,
+    related_name="carts",
+    null=True,
+    blank=True,
+)
+
+
     session_key = models.CharField(
         max_length=255,
         blank=True,
@@ -94,15 +96,10 @@ class Cart(models.Model):
         null=True,
         blank=True,
     )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Cart {self.id}"
-
-    class Meta:
-        app_label = "magazin"
 
 
 
@@ -161,20 +158,10 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def clean(self):
-        if self.rating < 1 or self.rating > 5:
-            raise ValidationError(
-                "Rating must be between 1 and 5."
-            )
-
     def __str__(self):
-        return (
-            f"{self.product.name} - "
-            f"{self.user} - {self.rating}"
-        )
+        return f"{self.product} - {self.rating}"
 
     class Meta:
-        app_label = "magazin"
         ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
@@ -182,3 +169,4 @@ class Review(models.Model):
                 name="one_review_per_user_product",
             ),
         ]
+

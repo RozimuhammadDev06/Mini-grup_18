@@ -2,6 +2,8 @@ import os
 
 import environ
 
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 # ============================================================
 # Asosiy sozlamalar
@@ -243,6 +245,14 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": (
         "config.api_exception_handler.custom_exception_handler"
     ),
+    "REST_FRAMEWORK" : {
+        "DEFAULT_FILTER_BACKENDS": [
+            "django_filters.rest_framework.DjangoFilterBackend",
+            "rest_framework.filters.SearchFilter",
+            "rest_framework.filters.OrderingFilter",
+    ],
+}
+
 }
 
 

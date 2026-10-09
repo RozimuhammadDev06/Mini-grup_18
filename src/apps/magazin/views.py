@@ -1,6 +1,9 @@
 from rest_framework import permissions, viewsets, status
 from rest_framework.response import Response
 
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import (
     Brand,
     Cart,
@@ -29,30 +32,70 @@ from .serializers import (
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    """
-    Product CRUD API.
-
-    Mahsulotlarni ko‘rish hammaga ochiq.
-    Mahsulot yaratish, o‘zgartirish va o‘chirish
-    faqat login qilgan foydalanuvchiga ruxsat etiladi.
-    """
-
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    def get_permissions(self):
-        if self.action in [
-            "list",
-            "retrieve",
-        ]:
-            return [
-                permissions.AllowAny(),
-            ]
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
 
-        return [
-            permissions.IsAuthenticated(),
-        ]
+    filterset_fields = {
+        "category": ["exact"],
+        "brand": ["exact"],
+        "material": ["exact", "icontains"],
+        "color": ["exact", "icontains"],
+        "price": ["exact", "gte", "lte"],
+        "length_mm": ["exact", "gte", "lte"],
+        "width_mm": ["exact", "gte", "lte"],
+        "height_mm": ["exact", "gte", "lte"],
+        "weight_kg": ["exact", "gte", "lte"],
+    }
 
+    search_fields = [
+        "name",
+        "article",
+        "description",
+        "material",
+        "color",
+        "brand__name",
+        "category__name",
+    ]
+
+    ordering_fields = [
+        "price",
+        "name",
+        "created_at",
+    ]
+
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        queryset = Product.objects.select_related(
+            "brand",
+            "category",
+        )
+
+        if self.action in ["list", "retrieve"]:
+            queryset = queryset.filter(is_active=True)
+
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        brand_id = self.request.query_params.get("brand")
+        if brand_id:
+            queryset = queryset.filter(brand_id=brand_id)
+
+        min_price = self.request.query_params.get("min_price")
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+
+        max_price = self.request.query_params.get("max_price")
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        return queryset
 
 
 class BrandViewSet(viewsets.ModelViewSet):
