@@ -3,13 +3,134 @@ from django.utils import timezone
 
 from .models import Product, Promotion, Brand, Category, Cart, CartItem, Order, News, Review
 
+class BrandShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = [
+            "id",
+            "name",
+            "slug",
+        ]
+
+
+class CategoryShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = [
+            "id",
+            "name",
+            "slug",
+        ]
+
+
 class ProductSerializer(serializers.ModelSerializer):
-    brand = serializers.StringRelatedField(read_only=True)
-    category = serializers.StringRelatedField(read_only=True)
+    # Response'da object ko'rinadi
+    brand = BrandShortSerializer(
+        read_only=True,
+    )
+    category = CategoryShortSerializer(
+        read_only=True,
+    )
+
+    # Request'da ID yuboriladi
+    brand_id = serializers.PrimaryKeyRelatedField(
+        source="brand",
+        queryset=Brand.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+    category_id = serializers.PrimaryKeyRelatedField(
+        source="category",
+        queryset=Category.objects.all(),
+        write_only=True,
+    )
+
+    attributes = serializers.JSONField(
+        source="attrs_json",
+        required=False,
+    )
+    in_stock = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = [
+            "id",
+            "brand",
+            "brand_id",
+            "category",
+            "category_id",
+            "name",
+            "slug",
+            "article",
+            "material",
+            "color",
+            "length_mm",
+            "width_mm",
+            "height_mm",
+            "weight_kg",
+            "price",
+            "old_price",
+            "stock_quantity",
+            "in_stock",
+            "image",
+            "image_url",
+            "attributes",
+            "description",
+            "is_active",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "brand",
+            "category",
+            "in_stock",
+            "image_url",
+            "created_at",
+        ]
+
+    def get_in_stock(self, obj):
+        return obj.stock_quantity > 0
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+
+        request = self.context.get("request")
+
+        if request:
+            return request.build_absolute_uri(
+                obj.image.url,
+            )
+
+        return obj.image.url
+
+    def validate(self, attrs):
+        price = attrs.get(
+            "price",
+            getattr(self.instance, "price", None),
+        )
+        old_price = attrs.get(
+            "old_price",
+            getattr(self.instance, "old_price", None),
+        )
+
+        if (
+            price is not None
+            and old_price is not None
+            and old_price < price
+        ):
+            raise serializers.ValidationError(
+                {
+                    "old_price": (
+                        "old_price must be greater than or "
+                        "equal to price."
+                    )
+                }
+            )
+
+        return attrs
 
 
 class PromotionSerializer(serializers.ModelSerializer):

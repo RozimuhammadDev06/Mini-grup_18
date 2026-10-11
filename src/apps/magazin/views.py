@@ -1,8 +1,12 @@
 from rest_framework import permissions, viewsets, status
 from rest_framework.response import Response
 
-from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, viewsets
+
+from .models import Product
+from .serializers import ProductSerializer
+
 
 from .models import (
     Brand,
@@ -31,6 +35,12 @@ from .serializers import (
 
 
 
+
+
+from .models import Product
+from .serializers import ProductSerializer
+
+
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
 
@@ -41,15 +51,50 @@ class ProductViewSet(viewsets.ModelViewSet):
     ]
 
     filterset_fields = {
-        "category": ["exact"],
-        "brand": ["exact"],
-        "material": ["exact", "icontains"],
-        "color": ["exact", "icontains"],
-        "price": ["exact", "gte", "lte"],
-        "length_mm": ["exact", "gte", "lte"],
-        "width_mm": ["exact", "gte", "lte"],
-        "height_mm": ["exact", "gte", "lte"],
-        "weight_kg": ["exact", "gte", "lte"],
+        "category": [
+            "exact",
+        ],
+        "brand": [
+            "exact",
+        ],
+        "material": [
+            "exact",
+            "icontains",
+        ],
+        "color": [
+            "exact",
+            "icontains",
+        ],
+        "price": [
+            "exact",
+            "gte",
+            "lte",
+        ],
+        "length_mm": [
+            "exact",
+            "gte",
+            "lte",
+        ],
+        "width_mm": [
+            "exact",
+            "gte",
+            "lte",
+        ],
+        "height_mm": [
+            "exact",
+            "gte",
+            "lte",
+        ],
+        "weight_kg": [
+            "exact",
+            "gte",
+            "lte",
+        ],
+        "stock_quantity": [
+            "exact",
+            "gte",
+            "lte",
+        ],
     }
 
     search_fields = [
@@ -66,9 +111,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         "price",
         "name",
         "created_at",
+        "stock_quantity",
     ]
 
-    ordering = ["-created_at"]
+    ordering = [
+        "-created_at",
+    ]
 
     def get_queryset(self):
         queryset = Product.objects.select_related(
@@ -76,26 +124,28 @@ class ProductViewSet(viewsets.ModelViewSet):
             "category",
         )
 
-        if self.action in ["list", "retrieve"]:
-            queryset = queryset.filter(is_active=True)
-
-        category_id = self.request.query_params.get("category")
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
-
-        brand_id = self.request.query_params.get("brand")
-        if brand_id:
-            queryset = queryset.filter(brand_id=brand_id)
-
-        min_price = self.request.query_params.get("min_price")
-        if min_price:
-            queryset = queryset.filter(price__gte=min_price)
-
-        max_price = self.request.query_params.get("max_price")
-        if max_price:
-            queryset = queryset.filter(price__lte=max_price)
+        if self.action in [
+            "list",
+            "retrieve",
+        ]:
+            return queryset.filter(
+                is_active=True,
+            )
 
         return queryset
+
+    def get_permissions(self):
+        if self.action in [
+            "list",
+            "retrieve",
+        ]:
+            return [
+                permissions.AllowAny(),
+            ]
+
+        return [
+            permissions.IsAuthenticated(),
+        ]
 
 
 class BrandViewSet(viewsets.ModelViewSet):
