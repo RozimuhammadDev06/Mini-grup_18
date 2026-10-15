@@ -57,6 +57,20 @@ class Brand(models.Model):
         app_label = "magazin"
 
 
+class ProductType(models.Model):
+    """Mahsulot turi: Перфоратор, Дрель, Смеситель... (katalog filtri uchun)"""
+
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+
+    class Meta:
+        app_label = "magazin"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Product(models.Model):
     category = models.ForeignKey(
         Category,
@@ -65,6 +79,13 @@ class Product(models.Model):
     )
     brand = models.ForeignKey(
         Brand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="products",
+    )
+    product_type = models.ForeignKey(
+        ProductType,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -139,10 +160,33 @@ class Product(models.Model):
         default="",
     )
     is_active = models.BooleanField(default=True)
+    is_hit = models.BooleanField(
+        default=False,
+        help_text="Katalogda «ХИТ» belgisi bilan ko'rsatiladi",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+
+class ProductImage(models.Model):
+    """Mahsulot galereyasi (asosiy rasm — Product.image)"""
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(upload_to="products/gallery/")
+    sort = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        app_label = "magazin"
+        ordering = ["sort", "id"]
+
+    def __str__(self):
+        return f"{self.product} — {self.sort}"
 
 
 class Cart(models.Model):
@@ -200,6 +244,31 @@ class Order(models.Model):
 
 
 class News(models.Model):
+    class Rubric(models.TextChoices):
+        NEWS = "news", "Новости"
+        ARTICLES = "articles", "Статьи"
+        TIPS = "tips", "Советы"
+        REVIEWS = "reviews", "Обзоры"
+
+    title = models.CharField(max_length=255, default="")
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        allow_unicode=True,
+        help_text="Bo'sh qoldirilsa sarlavhadan avtomatik yaratiladi",
+    )
+    rubric = models.CharField(
+        max_length=20,
+        choices=Rubric.choices,
+        default=Rubric.NEWS,
+        db_index=True,
+    )
+    excerpt = models.TextField(blank=True, default="")
+    content = models.TextField(blank=True, default="")
+    image = models.ImageField(upload_to="news/", null=True, blank=True)
+    # Yangilik biror mahsulot haqida bo'lsa (ixtiyoriy)
     product = models.ForeignKey(
         Product,
         on_delete=models.SET_NULL,
@@ -207,9 +276,31 @@ class News(models.Model):
         null=True,
         blank=True,
     )
+    is_published = models.BooleanField(default=True, db_index=True)
+    published_at = models.DateTimeField(default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-published_at", "-id"]
+        verbose_name_plural = "news"
 
     def __str__(self):
-        return str(self.product) if self.product else "News"
+        return self.title or f"News #{self.pk}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title:
+            self.slug = self._unique_slug()
+        super().save(*args, **kwargs)
+
+    def _unique_slug(self):
+        from django.utils.text import slugify
+
+        base = slugify(self.title, allow_unicode=True)[:240] or "news"
+        slug, n = base, 2
+        while News.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug, n = f"{base}-{n}", n + 1
+        return slug
 
 
 class Review(models.Model):

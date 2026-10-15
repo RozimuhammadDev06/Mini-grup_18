@@ -1,7 +1,35 @@
 from rest_framework import serializers
 from django.utils import timezone
 
-from .models import Product, Promotion, Brand, Category, Cart, CartItem, Order, News, Review
+from .models import (
+    Product,
+    ProductImage,
+    ProductType,
+    Promotion,
+    Brand,
+    Category,
+    Cart,
+    CartItem,
+    Order,
+    News,
+    Review,
+)
+
+
+def absolute_url(serializer, file_field):
+    """Rasm uchun to'liq manzil (https://.../media/...)"""
+    if not file_field:
+        return None
+    request = serializer.context.get("request")
+    url = file_field.url
+    return request.build_absolute_uri(url) if request else url
+
+
+class ProductTypeShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductType
+        fields = ["id", "name", "slug"]
+
 
 class BrandShortSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,12 +74,26 @@ class ProductSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
+    product_type = ProductTypeShortSerializer(
+        read_only=True,
+    )
+    product_type_id = serializers.PrimaryKeyRelatedField(
+        source="product_type",
+        queryset=ProductType.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
     attributes = serializers.JSONField(
         source="attrs_json",
         required=False,
     )
     in_stock = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
+    rating_avg = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -61,6 +103,8 @@ class ProductSerializer(serializers.ModelSerializer):
             "brand_id",
             "category",
             "category_id",
+            "product_type",
+            "product_type_id",
             "name",
             "slug",
             "article",
@@ -76,17 +120,25 @@ class ProductSerializer(serializers.ModelSerializer):
             "in_stock",
             "image",
             "image_url",
+            "images",
             "attributes",
             "description",
             "is_active",
+            "is_hit",
+            "rating_avg",
+            "reviews_count",
             "created_at",
         ]
         read_only_fields = [
             "id",
             "brand",
             "category",
+            "product_type",
             "in_stock",
             "image_url",
+            "images",
+            "rating_avg",
+            "reviews_count",
             "created_at",
         ]
 
@@ -94,17 +146,19 @@ class ProductSerializer(serializers.ModelSerializer):
         return obj.stock_quantity > 0
 
     def get_image_url(self, obj):
-        if not obj.image:
-            return None
+        return absolute_url(self, obj.image)
 
-        request = self.context.get("request")
+    def get_images(self, obj):
+        """Galereya: to'liq manzillar ro'yxati (asosiy rasm image_url'da)"""
+        return [absolute_url(self, item.image) for item in obj.images.all()]
 
-        if request:
-            return request.build_absolute_uri(
-                obj.image.url,
-            )
+    # rating_avg / reviews_count — ProductViewSet queryset'ida annotate qilinadi
+    def get_rating_avg(self, obj):
+        value = getattr(obj, "rating_avg", None)
+        return round(value, 1) if value is not None else None
 
-        return obj.image.url
+    def get_reviews_count(self, obj):
+        return getattr(obj, "reviews_count", 0) or 0
 
     def validate(self, attrs):
         price = attrs.get(
@@ -196,16 +250,58 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class NewsProductSerializer(serializers.ModelSerializer):
+    """Yangilik ichidagi mahsulot — qisqa ko'rinish"""
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "slug", "price"]
+
+
 class NewsSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(read_only=True)
+    rubric_label = serializers.CharField(source="get_rubric_display", read_only=True)
+    image_url = serializers.SerializerMethodField()
+    product = NewsProductSerializer(read_only=True)
+    product_id = serializers.PrimaryKeyRelatedField(
+        source="product",
+        queryset=Product.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = News
-        fields = "__all__"
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "rubric",
+            "rubric_label",
+            "excerpt",
+            "content",
+            "image",
+            "image_url",
+            "product",
+            "product_id",
+            "is_published",
+            "published_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "rubric_label", "image_url", "product", "created_at", "updated_at"]
+        extra_kwargs = {
+            "title": {"required": True, "allow_blank": False},
+            "slug": {"required": False},
+        }
+
+    def get_image_url(self, obj):
+        return absolute_url(self, obj.image)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user_email = serializers.EmailField(source="user.email", read_only=True)
+    # Email ochiq ro'yxatda ko'rsatilmaydi — faqat ism
+    user_name = serializers.SerializerMethodField()
     product_name = serializers.CharField(source="product.name", read_only=True)
 
     class Meta:
@@ -215,7 +311,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "product",
             "product_name",
             "user",
-            "user_email",
+            "user_name",
             "rating",
             "text",
             "is_approved",
@@ -225,12 +321,32 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "user",
-            "user_email",
+            "user_name",
             "product_name",
             "is_approved",
             "created_at",
             "updated_at",
         ]
+
+    def get_user_name(self, obj):
+        user = obj.user
+        return (
+            user.full_name
+            or user.get_full_name()
+            or user.username
+            or "Покупатель"
+        )
+
+    def validate(self, attrs):
+        # Bitta foydalanuvchi bitta mahsulotga bitta sharh (DB constraint'dan oldin aniq xabar)
+        request = self.context.get("request")
+        product = attrs.get("product")
+        if self.instance is None and request and product:
+            if Review.objects.filter(product=product, user=request.user).exists():
+                raise serializers.ValidationError(
+                    {"product": "Вы уже оставили отзыв на этот товар."}
+                )
+        return attrs
 
     def validate_rating(self, value):
         if value < 1 or value > 5:
