@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.types import OpenApiTypes
 
 from .models import (
     Product,
@@ -145,18 +147,27 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_in_stock(self, obj):
         return obj.stock_quantity > 0
 
+
+    @extend_schema_field(OpenApiTypes.BOOL)
+    def get_in_stock(self, obj):
+        return obj.stock_quantity > 0
+
+    @extend_schema_field(OpenApiTypes.URI)
     def get_image_url(self, obj):
         return absolute_url(self, obj.image)
 
+    @extend_schema_field(OpenApiTypes.STR)
     def get_images(self, obj):
         """Galereya: to'liq manzillar ro'yxati (asosiy rasm image_url'da)"""
         return [absolute_url(self, item.image) for item in obj.images.all()]
 
     # rating_avg / reviews_count — ProductViewSet queryset'ida annotate qilinadi
+    @extend_schema_field(OpenApiTypes.FLOAT)
     def get_rating_avg(self, obj):
         value = getattr(obj, "rating_avg", None)
         return round(value, 1) if value is not None else None
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_reviews_count(self, obj):
         return getattr(obj, "reviews_count", 0) or 0
 
@@ -212,6 +223,21 @@ class PromotionSerializer(serializers.ModelSerializer):
     def get_is_current(self, obj):
         now = timezone.now()
         return obj.start_date <= now <= obj.end_date
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_image_url(self, obj):
+        return absolute_url(self, obj.image)
+
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_user_name(self, obj):
+        user = obj.user
+        return (
+            user.full_name
+            or user.get_full_name()
+            or user.username
+            or "Покупатель"
+        )
 
 
 

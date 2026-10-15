@@ -15,9 +15,15 @@ class Migration(migrations.Migration):
     operations = [
         # `promo_code_id` already exists in an earlier migration; skip adding it again.
         migrations.AlterField(
-            model_name='cart',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='carts', to=settings.AUTH_USER_MODEL),
+            model_name="cart",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="carts",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.CreateModel(
             name='Review',

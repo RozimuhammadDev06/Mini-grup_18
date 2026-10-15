@@ -39,3 +39,19 @@ class OptionalJWTAuthentication(JWTAuthentication):
 
 
 AUTHENTICATION_CLASSES = [OptionalJWTAuthentication]
+
+
+# drf-spectacular OpenAPI extension for the OptionalJWTAuthentication
+# so spectacular can include a bearerAuth security scheme when this
+# authenticator is used on views.
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
+
+
+# The OptionalJWTAuthentication extension was removed because schema
+# validation produced an incompatible security object with the
+# project's OpenAPI JSON Schema. If you want to include a security
+# definition for OptionalJWTAuthentication, add a custom
+# OpenApiAuthenticationExtension implementation that returns a
+# JSON-Schema-compliant object.
+
+__all__ = ["CatalogPagination", "OptionalJWTAuthentication"]
