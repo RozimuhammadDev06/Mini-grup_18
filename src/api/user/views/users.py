@@ -86,8 +86,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         permissions.AllowAny,
     ]
 
-    # Use drf-spectacular's AutoSchema for OpenAPI generation
-    schema = AutoSchema()
+    
 
     @extend_schema(
         request=LoginSerializer,
@@ -453,6 +452,7 @@ class AddressViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
     ]
 
+  
     def get_queryset(self):
         if getattr(
             self,
@@ -479,7 +479,7 @@ class AddressViewSet(viewsets.ModelViewSet):
 # =============================================================
 
 class ChangePasswordView(APIView):
-    schema = AutoSchema()
+  
     permission_classes = [
         permissions.IsAuthenticated,
     ]

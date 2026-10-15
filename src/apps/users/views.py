@@ -53,12 +53,12 @@ class AddressViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticated,
     ]
 
-    # Explicitly use drf-spectacular for this ViewSet.
-    schema = AutoSchema()
-
     def get_queryset(self):
-        # drf-spectacular may inspect the view without a real user.
-        if getattr(self, "swagger_fake_view", False):
+        if getattr(
+            self,
+            "swagger_fake_view",
+            False,
+        ):
             return Address.objects.none()
 
         if not self.request.user.is_authenticated:
