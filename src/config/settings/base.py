@@ -425,3 +425,24 @@ FINTECHHUB_RETURN_URL = env(
     default="",
 )
 
+
+
+FHP_BASE_URL = env(
+    "FHP_BASE_URL",
+    default=FINTECHHUB_BASE_URL,
+ )
+
+FHP_SERVICE_ID = env.int(
+    "FHP_SERVICE_ID",
+    default=FINTECHHUB_SERVICE_ID,
+)
+
+FHP_SERVICE_SECRET_KEY = env(
+    "FHP_SERVICE_SECRET_KEY",
+    default=FINTECHHUB_MERCHANT_SECRET_KEY,
+)
+
+FHP_TIMEOUT = env.int(
+    "FHP_TIMEOUT",
+    default=20,
+)
