@@ -25,15 +25,111 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.magazin.models import Order
 
 from api.payments.clients import FintechhubClient
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 
 
 PAYMENT_BASE_URL = "http://159.223.145.49:3079"
+
+
+@extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                },
+                "password": {
+                    "type": "string",
+                    "format": "password",
+                },
+            },
+            "required": [
+                "email",
+                "password",
+            ],
+        },
+    },
+    responses={
+        200: OpenApiResponse(
+            description="FintechHub login response.",
+        ),
+        400: OpenApiResponse(
+            description="Invalid login data.",
+        ),
+        502: OpenApiResponse(
+            description="FintechHub connection error.",
+        ),
+    },
+    tags=["Payments Authentication"],
+)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def login(request):
+    return _forward_auth(
+        request,
+        "/api/auth/login/",
+    )
+
+
+@extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                },
+                "password": {
+                    "type": "string",
+                    "format": "password",
+                },
+                "full_name": {
+                    "type": "string",
+                },
+            },
+            "required": [
+                "email",
+                "password",
+            ],
+        },
+    },
+    responses={
+        201: OpenApiResponse(
+            description="FintechHub registration response.",
+        ),
+        400: OpenApiResponse(
+            description="Invalid registration data.",
+        ),
+        502: OpenApiResponse(
+            description="FintechHub connection error.",
+        ),
+    },
+    tags=["Payments Authentication"],
+)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def register(request):
+    return _forward_auth(
+        request,
+        "/api/auth/register/",
+    )
+
 
 
 # ---------- LOGIN / REGISTER (ustoz usuli) ----------
@@ -56,14 +152,14 @@ def _forward_auth(request, path):
         return JsonResponse({"error": "Noto'g'ri javob", "raw": resp.text}, status=502)
 
 
-@csrf_exempt
-def login(request):
-    return _forward_auth(request, "/api/auth/login/")
+# @csrf_exempt
+# def login(request):
+#     return _forward_auth(request, "/api/auth/login/")
 
 
-@csrf_exempt
-def register(request):
-    return _forward_auth(request, "/api/auth/register/")
+# @csrf_exempt
+# def register(request):
+#     return _forward_auth(request, "/api/auth/register/")
 
 
 # ---------- TO'LOV PROXY ----------
