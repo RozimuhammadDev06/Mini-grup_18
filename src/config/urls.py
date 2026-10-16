@@ -2,13 +2,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-
 
 urlpatterns = [
     path(
@@ -26,6 +24,11 @@ urlpatterns = [
     path(
         "api/",
         include("apps.magazin.urls"),
+    ),
+
+    path(
+        "api/payments/",
+        include("api.payments.urls"),
     ),
 
     # Versioned API, if your frontend uses /api/v1/
