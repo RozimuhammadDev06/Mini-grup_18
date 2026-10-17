@@ -48,6 +48,22 @@ from .serializers import (
 from .models import Product
 from .serializers import ProductSerializer
 
+class IsStaffOrReadOnly(permissions.BasePermission):
+    """
+    Hamma user mahsulotlarni ko‘rishi mumkin.
+    Faqat staff user mahsulot yaratishi, o‘zgartirishi va o‘chirishi mumkin.
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_staff
+        )
+
 
 class ProductViewSet(viewsets.ModelViewSet):
     """
