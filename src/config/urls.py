@@ -31,10 +31,20 @@ urlpatterns = [
         include("api.payments.urls"),
     ),
 
+    path(
+        "api/",
+        include("apps.store_reviews.urls"),
+    ),
+
     # Versioned API, if your frontend uses /api/v1/
     path(
         "api/v1/",
         include("apps.magazin.urls"),
+    ),
+
+    path(
+        "api/v1/",
+        include("apps.store_reviews.urls"),
     ),
 
     # OpenAPI schema

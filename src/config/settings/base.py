@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     # Loyiha ilovalari
     "apps.users",
     "apps.magazin",
+    "apps.store_reviews",
 ]
 
 
