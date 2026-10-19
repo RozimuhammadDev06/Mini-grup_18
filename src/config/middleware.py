@@ -1,7 +1,10 @@
-import json
+import logging
 
 from django.conf import settings
 from django.http import JsonResponse
+
+
+logger = logging.getLogger(__name__)
 
 
 class APIExceptionJSONMiddleware:
@@ -18,6 +21,11 @@ class APIExceptionJSONMiddleware:
 
         except Exception as exc:
             if request.path.startswith("/api/"):
+                logger.exception(
+                    "Unhandled exception for API request %s %s",
+                    request.method,
+                    request.path,
+                )
                 error_detail = "Internal server error."
                 if settings.DEBUG:
                     error_detail = f"{type(exc).__name__}: {exc}"
@@ -30,4 +38,4 @@ class APIExceptionJSONMiddleware:
                     status=500,
                 )
 
-            raise exc
+            raise
