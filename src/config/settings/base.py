@@ -32,10 +32,7 @@ SECRET_KEY = env(
     default="django-insecure-development-key-change-in-production",
 )
 
-DEBUG = env.bool(
-    "DEBUG",
-    default=False,
-)
+DEBUG = True
 
 BASE_URL = env(
     "BASE_URL",

@@ -19,9 +19,9 @@ else:
     try:
         client = genai.Client(api_key=api_key)
 
-        # Updated model string to gemini-3.6-flash
+        # Updated model string to gemini-2.0-flash (multimodal)
         chat = client.chats.create(
-            model='gemini-3.6-flash',
+            model='gemini-2.0-flash',
             config=types.GenerateContentConfig(
                 system_instruction="You are a helpful assistant for Muhammadsodiq's project."
             )
