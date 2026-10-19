@@ -97,8 +97,10 @@ class City(models.Model):
 class Address(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="addresses",
+        null=True,
+        blank=True,
     )
     company_name = models.CharField(max_length=255, blank=True, null=True)
     region = models.ForeignKey(
@@ -120,7 +122,7 @@ class Address(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Address {self.id} for {self.user.username}"
+        return f"Address {self.id} for {self.user.username if self.user_id else 'anonymous'}"
 
     class Meta:
         app_label = "users"

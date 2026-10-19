@@ -30,10 +30,18 @@ User = get_user_model()
 
 
 class AddressSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True,
+        write_only=True,
+    )
+
     class Meta:
         model = Address
         fields = [
             "id",
+            "user",
             "company_name",
             "region",
             "city",
