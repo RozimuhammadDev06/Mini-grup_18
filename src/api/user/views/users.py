@@ -448,15 +448,15 @@ class UserProfileView(APIView):
 
 class AddressViewSet(viewsets.ModelViewSet):
     """
-    CRUD for the authenticated user's addresses.
+    CRUD for addresses. Authenticated users see only their own addresses;
+    unauthenticated users can create an address (user left null).
     """
 
     serializer_class = AddressSerializer
     permission_classes = [
-        permissions.IsAuthenticated,
+        permissions.AllowAny,
     ]
 
-  
     def get_queryset(self):
         if getattr(
             self,
@@ -465,17 +465,20 @@ class AddressViewSet(viewsets.ModelViewSet):
         ):
             return Address.objects.none()
 
-        if not self.request.user.is_authenticated:
+        user = getattr(self.request, "user", None)
+        if user is None or not user.is_authenticated:
             return Address.objects.none()
 
         return Address.objects.filter(
-            user=self.request.user,
+            user=user,
         )
 
     def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user,
-        )
+        user = getattr(self.request, "user", None)
+        if user is not None and user.is_authenticated:
+            serializer.save(user=user)
+        else:
+            serializer.save(user=None)
 
 
 # =============================================================
