@@ -16,7 +16,7 @@ chat_config = types.GenerateContentConfig(
 
 # 2. Start the chat session
 chat = client.chats.create(
-    model='gemini-3.5-flash',
+    model='gemini-2.0-flash',
     config=chat_config
 )
 
@@ -25,12 +25,12 @@ print("AI: Welcome! Ask me anything. (Type 'quit' to exit)")
 # 3. Keep the conversation going until the user quits
 while True:
     user_input = input("Customer: ")
-    
+
     if user_input.lower() == 'quit':
         print("AI: Goodbye!")
         break
-        
+
     # Send the customer's message to the AI
     response = chat.send_message(user_input)
-    
+
     print(f"\nAI: {response.text}\n")
