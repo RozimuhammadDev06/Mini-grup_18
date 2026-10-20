@@ -382,9 +382,7 @@ class PromotionViewSet(viewsets.ModelViewSet):
     serializer_class = PromotionSerializer
 
     def get_queryset(self):
-        queryset = Promotion.objects.prefetch_related(
-            "products"
-        )
+        queryset = Promotion.objects.order_by("-id")
 
         if self.action in [
             "list",
