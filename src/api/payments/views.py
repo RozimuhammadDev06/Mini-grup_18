@@ -39,9 +39,6 @@ from api.payments.clients import FintechhubClient
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 
 
-PAYMENT_BASE_URL = "http://159.223.145.49:3079"
-
-
 @extend_schema(
     request={
         "application/json": {
@@ -141,7 +138,8 @@ def _forward_auth(request, path):
     except ValueError:
         return JsonResponse({"error": "Noto'g'ri JSON"}, status=400)
     try:
-        resp = requests.post(f"{PAYMENT_BASE_URL}{path}", json=data, timeout=20)
+        base_url = settings.FHP_BASE_URL.rstrip("/")
+        resp = requests.post(f"{base_url}{path}", json=data, timeout=20)
     except requests.exceptions.Timeout:
         return JsonResponse({"error": "Fintechhub javob bermadi"}, status=504)
     except requests.exceptions.RequestException as e:
