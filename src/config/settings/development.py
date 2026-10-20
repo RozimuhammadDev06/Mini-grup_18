@@ -8,7 +8,7 @@ from .base import *
 # Development sozlamalari
 # ============================================================
 
-DEBUG = True
+DEBUG = False
 
 FHP_BASE_URL = "http://159.223.145.49:3079"
 FHP_TIMEOUT = 20
