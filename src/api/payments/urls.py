@@ -23,6 +23,11 @@ app_name = "payments"
 
 urlpatterns = [
     path(
+        "login",
+        views.login,
+        name="payment-login-no-slash",
+    ),
+    path(
         "login/",
         views.login,
         name="payment-login",

@@ -17,6 +17,7 @@ class FintechhubClient:
         method,
         path,
         json_data=None,
+        authorization=None,
     ):
         url = f"{self.base_url}{path}"
 
@@ -24,6 +25,8 @@ class FintechhubClient:
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
+        if authorization:
+            headers["Authorization"] = authorization
 
         return requests.request(
             method=method,

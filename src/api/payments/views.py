@@ -170,7 +170,12 @@ class FintechProxy(APIView):
         body = {k: v for k, v in request.data.items()}
         body["service_id"] = int(settings.FHP_SERVICE_ID)
         try:
-            resp = FintechhubClient().request("POST", self.path, json_data=body)
+            resp = FintechhubClient().request(
+                "POST",
+                self.path,
+                json_data=body,
+                authorization=request.headers.get("Authorization"),
+            )
         except requests.exceptions.Timeout:
             return Response({"error": "Fintechhub javob bermadi (timeout)"}, status=504)
         except requests.exceptions.RequestException as e:
@@ -183,16 +188,16 @@ class FintechProxy(APIView):
 
 
 class PayInitView(FintechProxy):
-    path = "/v2/pay/init"
+    path = "/api/v2/pay/init"
 
 class CardRequestView(FintechProxy):
-    path = "/v2/merchant/card_token/request"
+    path = "/api/v2/merchant/card_token/request"
 
 class CardVerifyView(FintechProxy):
-    path = "/v2/merchant/card_token/verify"
+    path = "/api/v2/merchant/card_token/verify"
 
 class CardPaymentView(FintechProxy):
-    path = "/v2/merchant/card_token/payment"
+    path = "/api/v2/merchant/card_token/payment"
 
 
 # ---------- CALLBACKLAR (Fintechhub chaqiradi) ----------
@@ -225,8 +230,7 @@ class PrepareCallbackView(APIView):
             order = Order.objects.get(id=d.get("merchant_trans_id"))
         except Order.DoesNotExist:
             return Response({"error": -5, "error_note": "Order not found"})
-        # amount maydoni nomini o'zingizniki bilan almashtiring (masalan total_price)
-        if Decimal(str(d.get("amount"))) != Decimal(str(order.total_price)):
+        if Decimal(str(d.get("amount"))) != Decimal(str(order.total)):
             return Response({"error": -2, "error_note": "Incorrect amount"})
         return Response({
             "click_trans_id": d.get("click_trans_id"),
