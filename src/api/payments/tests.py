@@ -109,6 +109,36 @@ class PaymentLoginRouteTests(TestCase):
 class CardPaymentProxyTests(TestCase):
     @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
     @patch("api.payments.clients.requests.request")
+    def test_pythonanywhere_outbound_block_has_actionable_error(
+        self,
+        upstream_request,
+    ):
+        upstream_response = Mock()
+        upstream_response.json.side_effect = ValueError("not JSON")
+        upstream_response.text = (
+            "<HTML><h1>Access Denied</h1>"
+            "<p>Access to arbitrary websites is not available from free "
+            "accounts; see pythonanywhere.com/whitelist</p></HTML>"
+        )
+        upstream_response.status_code = 200
+        upstream_response.headers = {"Content-Type": "text/html"}
+        upstream_request.return_value = upstream_response
+
+        response = APIClient().post(
+            "/api/payments/card/payment/",
+            {"card_token": "test-token"},
+            format="json",
+            HTTP_AUTHORIZATION="Bearer test-token",
+        )
+
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("PythonAnywhere blocked", response.data["error"])
+        self.assertEqual(response.data["upstream_status"], 200)
+        self.assertEqual(response.data["upstream_content_type"], "text/html")
+        self.assertNotIn("raw", response.data)
+
+    @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
+    @patch("api.payments.clients.requests.request")
     def test_card_payment_uses_upstream_api_prefix(self, upstream_request):
         upstream_response = Mock()
         upstream_response.json.return_value = {"success": True}

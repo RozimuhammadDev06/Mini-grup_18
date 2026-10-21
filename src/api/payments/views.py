@@ -39,6 +39,28 @@ from api.payments.clients import FintechhubClient
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 
 
+def _upstream_non_json_error(response):
+    response_text = response.text.lower()
+    if (
+        "access to arbitrary websites is not available from free accounts"
+        in response_text
+        and "pythonanywhere.com/whitelist" in response_text
+    ):
+        message = (
+            "PythonAnywhere blocked this server's outbound request. "
+            "Ask PythonAnywhere to allowlist the payment provider's official "
+            "API hostname, or deploy on a host that permits outbound access."
+        )
+    else:
+        message = "Payment provider returned a non-JSON response."
+
+    return {
+        "error": message,
+        "upstream_status": response.status_code,
+        "upstream_content_type": response.headers.get("Content-Type", ""),
+    }
+
+
 @extend_schema(
     request={
         "application/json": {
@@ -147,7 +169,7 @@ def _forward_auth(request, path):
     try:
         return JsonResponse(resp.json(), status=resp.status_code, safe=False)
     except ValueError:
-        return JsonResponse({"error": "Noto'g'ri javob", "raw": resp.text}, status=502)
+        return JsonResponse(_upstream_non_json_error(resp), status=502)
 
 
 # @csrf_exempt
@@ -183,7 +205,7 @@ class FintechProxy(APIView):
         try:
             data = resp.json()
         except ValueError:
-            data = {"error": "Noto'g'ri javob", "raw": resp.text}
+            return Response(_upstream_non_json_error(resp), status=502)
         return Response(data, status=resp.status_code)
 
 
