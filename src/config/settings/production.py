@@ -3,7 +3,10 @@ from datetime import timedelta
 
 FHP_BASE_URL = env("FHP_BASE_URL")
 FHP_SERVICE_ID = env.int("FHP_SERVICE_ID")
-FHP_SERVICE_SECRET_KEY = env("FHP_SERVICE_SECRET_KEY")
+FHP_SERVICE_SECRET_KEY = (
+    env("FHP_SERVICE_SECRET_KEY", default="")
+    or FINTECHHUB_MERCHANT_SECRET_KEY
+)
 
 # INSTALLED_APPS += [
 #     third-parties
