@@ -65,6 +65,19 @@ class IsStaffOrReadOnly(permissions.BasePermission):
         )
 
 
+class NewsWritePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_staff:
+            return True
+        return (
+            view.action == "create"
+            and user.has_perm("magazin.add_news")
+        )
+
+
 class ProductViewSet(viewsets.ModelViewSet):
     """
     Katalog mahsulotlari.
@@ -348,7 +361,7 @@ class NewsViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve", "rubrics"]:
             return [permissions.AllowAny()]
-        return [permissions.IsAdminUser()]
+        return [NewsWritePermission()]
 
     @action(detail=False, methods=["get"])
     def rubrics(self, request):
