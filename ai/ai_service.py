@@ -24,6 +24,11 @@ def get_client() -> genai.Client:
     return genai.Client(api_key=api_key)
 
 
+# Multimodal models that support image input, in order of preference
+MULTIMODAL_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+TEXT_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+
+
 def _to_bytes_and_mime(image: Union[str, bytes, "Image.Image"]) -> tuple[bytes, str]:
     """Convert an image (path, bytes, or PIL Image) into (raw_bytes, mime_type)."""
     if isinstance(image, str):
@@ -68,34 +73,71 @@ def send_to_ai(
     if (user_message is None or not str(user_message).strip()) and image is None:
         raise ValueError("user_message or image must be provided.")
 
-    contents = []
-    if user_message and str(user_message).strip():
-        contents.append(types.Part.from_text(str(user_message)))
-    if image is not None:
-        raw, mime = _to_bytes_and_mime(image)
-        contents.append(types.Part.from_bytes(raw, mime_type=mime))
+    models_to_try = MULTIMODAL_MODELS if image is not None else TEXT_MODELS
+    last_error = None
 
-    try:
-        response = get_client().models.generate_content(
-            model="gemini-2.0-flash",
-            contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=(
-                    "You are a helpful customer service assistant "
-                    "for Muhammadsodiq's project."
+    for model_name in models_to_try:
+        contents = []
+        if user_message and str(user_message).strip():
+            contents.append(types.Part.from_text(str(user_message)))
+        if image is not None:
+            try:
+                raw, mime = _to_bytes_and_mime(image)
+                contents.append(types.Part.from_bytes(raw, mime_type=mime))
+            except Exception as exc:
+                raise RuntimeError(f"Failed to process image: {exc}") from exc
+
+        try:
+            response = get_client().models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    system_instruction=(
+                        "You are a helpful customer service assistant "
+                        "for Muhammadsodiq's project."
+                    ),
                 ),
-            ),
-        )
-    except Exception as exc:
-        msg = str(exc).lower()
-        if "does not support image" in msg or "image input" in msg or "cannot read" in msg:
-            raise RuntimeError(
-                "The configured Gemini model does not support image input. "
-                "Use a multimodal model (e.g. gemini-2.0-flash) or send text only."
-            ) from exc
-        raise
+            )
+            text = response.text or ""
+            # Check if the model responded with "cannot read image" message
+            if "does not support image" in text.lower() or "cannot read" in text.lower():
+                last_error = RuntimeError(text)
+                continue
+            return text
+        except Exception as exc:
+            msg = str(exc).lower()
+            last_error = exc
+            if "does not support image" in msg or "image input" in msg or "cannot read" in msg:
+                # Try next model
+                continue
+            raise
 
-    return response.text or ""
+    # All multimodal models failed — try text-only fallback
+    if image is not None and user_message and str(user_message).strip():
+        try:
+            response = get_client().models.generate_content(
+                model=models_to_try[0],
+                contents=[types.Part.from_text(str(user_message))],
+                config=types.GenerateContentConfig(
+                    system_instruction=(
+                        "You are a helpful customer service assistant "
+                        "for Muhammadsodiq's project."
+                    ),
+                ),
+            )
+            text = response.text or ""
+            if text and "cannot read" not in text.lower() and "does not support image" not in text.lower():
+                return text
+        except Exception:
+            pass
+
+    # All models failed
+    if last_error is not None:
+        raise RuntimeError(
+            "No available Gemini model supports image input. "
+            "Send text only or use a multimodal model (e.g. gemini-2.0-flash)."
+        ) from last_error
+    raise RuntimeError("AI request failed.")
 
 
 if __name__ == "__main__":
