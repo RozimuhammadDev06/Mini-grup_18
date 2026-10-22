@@ -212,14 +212,99 @@ class FintechProxy(APIView):
 class PayInitView(FintechProxy):
     path = "/api/v2/pay/init"
 
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "amount": {"type": "number"},
+                    "merchant_trans_id": {"type": "string"},
+                    "user_id": {"type": "integer"},
+                },
+                "required": ["amount", "merchant_trans_id"],
+            },
+        },
+        responses={
+            200: OpenApiResponse(description="Payment init response."),
+            502: OpenApiResponse(description="FintechHub connection error."),
+        },
+        tags=["Payments"],
+    )
+    def post(self, request):
+        return super().post(request)
+
+
 class CardRequestView(FintechProxy):
     path = "/api/v2/merchant/card_token/request"
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "card_number": {"type": "string"},
+                    "expiry": {"type": "string"},
+                    "amount": {"type": "number"},
+                },
+                "required": ["card_number", "expiry", "amount"],
+            },
+        },
+        responses={
+            200: OpenApiResponse(description="Card token request response."),
+            502: OpenApiResponse(description="FintechHub connection error."),
+        },
+        tags=["Payments"],
+    )
+    def post(self, request):
+        return super().post(request)
+
 
 class CardVerifyView(FintechProxy):
     path = "/api/v2/merchant/card_token/verify"
 
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "card_token": {"type": "string"},
+                    "otp": {"type": "string"},
+                },
+                "required": ["card_token", "otp"],
+            },
+        },
+        responses={
+            200: OpenApiResponse(description="Card verification response."),
+            502: OpenApiResponse(description="FintechHub connection error."),
+        },
+        tags=["Payments"],
+    )
+    def post(self, request):
+        return super().post(request)
+
+
 class CardPaymentView(FintechProxy):
     path = "/api/v2/merchant/card_token/payment"
+
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "card_token": {"type": "string"},
+                    "amount": {"type": "number"},
+                },
+                "required": ["card_token", "amount"],
+            },
+        },
+        responses={
+            200: OpenApiResponse(description="Card payment response."),
+            502: OpenApiResponse(description="FintechHub connection error."),
+        },
+        tags=["Payments"],
+    )
+    def post(self, request):
+        return super().post(request)
 
 
 # ---------- CALLBACKLAR (Fintechhub chaqiradi) ----------
@@ -239,53 +324,140 @@ class PrepareCallbackView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "click_trans_id": {"type": "string"},
+                    "service_id": {"type": "integer"},
+                    "merchant_trans_id": {"type": "string"},
+                    "amount": {"type": "number"},
+                    "action": {"type": "integer"},
+                    "sign_time": {"type": "string"},
+                    "sign_string": {"type": "string"},
+                },
+                "required": ["click_trans_id", "service_id", "merchant_trans_id", "amount", "action", "sign_time", "sign_string"],
+            },
+        },
+        responses={
+            200: OpenApiResponse(description="Prepare callback response."),
+            400: OpenApiResponse(description="Invalid request data."),
+        },
+        tags=["Payment Callbacks"],
+    )
     def post(self, request):
         d = request.data
-        expected = make_sign(
-            d.get("click_trans_id"), d.get("service_id"),
-            _get_service_secret(), d.get("merchant_trans_id"),
-            d.get("amount"), d.get("action"), d.get("sign_time"),
-        )
-        if not hmac.compare_digest(expected, str(d.get("sign_string", ""))):
-            return Response({"error": -1, "error_note": "SIGN CHECK FAILED"})
         try:
-            order = Order.objects.get(id=d.get("merchant_trans_id"))
-        except Order.DoesNotExist:
-            return Response({"error": -5, "error_note": "Order not found"})
-        if Decimal(str(d.get("amount"))) != Decimal(str(order.total)):
-            return Response({"error": -2, "error_note": "Incorrect amount"})
-        return Response({
-            "click_trans_id": d.get("click_trans_id"),
-            "merchant_trans_id": d.get("merchant_trans_id"),
-            "merchant_prepare_id": order.id,
-            "error": 0, "error_note": "Success",
-        })
+            click_trans_id = d.get("click_trans_id")
+            service_id = d.get("service_id")
+            merchant_trans_id = d.get("merchant_trans_id")
+            amount = d.get("amount")
+            action = d.get("action")
+            sign_time = d.get("sign_time")
+            sign_string = d.get("sign_string")
+
+            if not all([click_trans_id, merchant_trans_id, amount is not None, action is not None, sign_time, sign_string]):
+                return Response({"error": -3, "error_note": "Missing required fields"}, status=400)
+
+            expected = make_sign(
+                click_trans_id, service_id,
+                _get_service_secret(), merchant_trans_id,
+                amount, action, sign_time,
+            )
+            if not hmac.compare_digest(expected, str(sign_string)):
+                return Response({"error": -1, "error_note": "SIGN CHECK FAILED"}, status=400)
+
+            try:
+                order = Order.objects.get(id=merchant_trans_id)
+            except (Order.DoesNotExist, ValueError, TypeError):
+                return Response({"error": -5, "error_note": "Order not found"}, status=400)
+
+            try:
+                if Decimal(str(amount)) != Decimal(str(order.total)):
+                    return Response({"error": -2, "error_note": "Incorrect amount"}, status=400)
+            except (InvalidOperation, ValueError, TypeError):
+                return Response({"error": -2, "error_note": "Incorrect amount"}, status=400)
+
+            return Response({
+                "click_trans_id": click_trans_id,
+                "merchant_trans_id": merchant_trans_id,
+                "merchant_prepare_id": order.id,
+                "error": 0, "error_note": "Success",
+            })
+        except Exception:
+            return Response({"error": -1, "error_note": "Invalid request"}, status=400)
 
 
 class CompleteCallbackView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "click_trans_id": {"type": "string"},
+                    "service_id": {"type": "integer"},
+                    "merchant_trans_id": {"type": "string"},
+                    "merchant_prepare_id": {"type": "integer"},
+                    "amount": {"type": "number"},
+                    "action": {"type": "integer"},
+                    "sign_time": {"type": "string"},
+                    "sign_string": {"type": "string"},
+                    "error": {"type": "string"},
+                },
+                "required": ["click_trans_id", "service_id", "merchant_trans_id", "merchant_prepare_id", "amount", "action", "sign_time", "sign_string"],
+            },
+        },
+        responses={
+            200: OpenApiResponse(description="Complete callback response."),
+            400: OpenApiResponse(description="Invalid request data."),
+        },
+        tags=["Payment Callbacks"],
+    )
     def post(self, request):
         d = request.data
-        expected = make_sign(
-            d.get("click_trans_id"), d.get("service_id"),
-            _get_service_secret(), d.get("merchant_trans_id"),
-            d.get("merchant_prepare_id"), d.get("amount"),
-            d.get("action"), d.get("sign_time"),
-        )
-        if not hmac.compare_digest(expected, str(d.get("sign_string", ""))):
-            return Response({"error": -1, "error_note": "SIGN CHECK FAILED"})
         try:
-            order = Order.objects.get(id=d.get("merchant_trans_id"))
-        except Order.DoesNotExist:
-            return Response({"error": -5, "error_note": "Order not found"})
-        if str(d.get("error")) == "0":
-            order.status = "paid"
-            order.save()
-        return Response({
-            "click_trans_id": d.get("click_trans_id"),
-            "merchant_trans_id": d.get("merchant_trans_id"),
-            "merchant_confirm_id": order.id,
-            "error": 0, "error_note": "Success",
-        })
+            click_trans_id = d.get("click_trans_id")
+            service_id = d.get("service_id")
+            merchant_trans_id = d.get("merchant_trans_id")
+            merchant_prepare_id = d.get("merchant_prepare_id")
+            amount = d.get("amount")
+            action = d.get("action")
+            sign_time = d.get("sign_time")
+            sign_string = d.get("sign_string")
+
+            if not all([click_trans_id, merchant_trans_id, merchant_prepare_id is not None, amount is not None, action is not None, sign_time, sign_string]):
+                return Response({"error": -3, "error_note": "Missing required fields"}, status=400)
+
+            expected = make_sign(
+                click_trans_id, service_id,
+                _get_service_secret(), merchant_trans_id,
+                merchant_prepare_id, amount,
+                action, sign_time,
+            )
+            if not hmac.compare_digest(expected, str(sign_string)):
+                return Response({"error": -1, "error_note": "SIGN CHECK FAILED"}, status=400)
+
+            try:
+                order = Order.objects.get(id=merchant_trans_id)
+            except (Order.DoesNotExist, ValueError, TypeError):
+                return Response({"error": -5, "error_note": "Order not found"}, status=400)
+
+            try:
+                if str(d.get("error")) == "0":
+                    order.status = "paid"
+                    order.save()
+            except Exception:
+                return Response({"error": -1, "error_note": "Failed to update order"}, status=400)
+
+            return Response({
+                "click_trans_id": click_trans_id,
+                "merchant_trans_id": merchant_trans_id,
+                "merchant_confirm_id": order.id,
+                "error": 0, "error_note": "Success",
+            })
+        except Exception:
+            return Response({"error": -1, "error_note": "Invalid request"}, status=400)
