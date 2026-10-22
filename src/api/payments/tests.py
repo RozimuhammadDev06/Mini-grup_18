@@ -20,7 +20,10 @@ class PaymentCallbackTests(TestCase):
             total=Decimal("25.00"),
         )
 
-    @override_settings(FHP_SERVICE_SECRET_KEY="test-callback-secret")
+    @override_settings(
+        FHP_SERVICE_SECRET_KEY="",
+        FINTECHHUB_MERCHANT_SECRET_KEY="test-callback-secret",
+    )
     def test_prepare_callback_uses_order_total(self):
         payload = {
             "click_trans_id": "transaction-1",
@@ -49,6 +52,45 @@ class PaymentCallbackTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["error"], 0)
         self.assertEqual(response.data["merchant_prepare_id"], self.order.pk)
+
+    @override_settings(
+        FHP_SERVICE_SECRET_KEY="",
+        FINTECHHUB_MERCHANT_SECRET_KEY="",
+    )
+    def test_callbacks_return_service_unavailable_without_secret(self):
+        payload = {
+            "click_trans_id": "transaction-missing-secret",
+            "service_id": "1",
+            "merchant_trans_id": str(self.order.pk),
+            "merchant_prepare_id": str(self.order.pk),
+            "amount": "25.00",
+            "action": "0",
+            "sign_time": "2026-10-21 12:00:00",
+            "sign_string": "not-used-without-configured-secret",
+            "error": "0",
+        }
+
+        prepare_response = self.client.post(
+            "/api/payments/prepare/",
+            payload,
+            format="json",
+        )
+        complete_response = self.client.post(
+            "/api/payments/complete/",
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(prepare_response.status_code, 503)
+        self.assertEqual(complete_response.status_code, 503)
+        self.assertEqual(
+            prepare_response.data["error_note"],
+            "Payment service not configured",
+        )
+        self.assertEqual(
+            complete_response.data["error_note"],
+            "Payment service not configured",
+        )
 
     @override_settings(FHP_SERVICE_SECRET_KEY="test-callback-secret")
     def test_complete_callback_marks_order_paid(self):

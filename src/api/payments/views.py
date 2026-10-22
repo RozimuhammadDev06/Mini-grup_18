@@ -201,7 +201,7 @@ class FintechProxy(APIView):
         except requests.exceptions.Timeout:
             return Response({"error": "Fintechhub javob bermadi (timeout)"}, status=504)
         except requests.exceptions.RequestException as e:
-            return Response({"error": str(e)}, status=502)
+            return Response({"error": f"Payment provider unreachable: {e}"}, status=502)
         try:
             data = resp.json()
         except ValueError:
@@ -313,11 +313,14 @@ def make_sign(*parts):
 
 
 def _get_service_secret():
-    if not settings.FHP_SERVICE_SECRET_KEY:
+    secret = settings.FHP_SERVICE_SECRET_KEY
+    if not secret:
+        secret = settings.FINTECHHUB_MERCHANT_SECRET_KEY
+    if not secret:
         raise ImproperlyConfigured(
             "FHP_SERVICE_SECRET_KEY must be configured to verify payment callbacks."
         )
-    return settings.FHP_SERVICE_SECRET_KEY
+    return secret
 
 
 class PrepareCallbackView(APIView):
@@ -360,11 +363,14 @@ class PrepareCallbackView(APIView):
             if not all([click_trans_id, merchant_trans_id, amount is not None, action is not None, sign_time, sign_string]):
                 return Response({"error": -3, "error_note": "Missing required fields"}, status=400)
 
-            expected = make_sign(
-                click_trans_id, service_id,
-                _get_service_secret(), merchant_trans_id,
-                amount, action, sign_time,
-            )
+            try:
+                expected = make_sign(
+                    click_trans_id, service_id,
+                    _get_service_secret(), merchant_trans_id,
+                    amount, action, sign_time,
+                )
+            except ImproperlyConfigured:
+                return Response({"error": -1, "error_note": "Payment service not configured"}, status=503)
             if not hmac.compare_digest(expected, str(sign_string)):
                 return Response({"error": -1, "error_note": "SIGN CHECK FAILED"}, status=400)
 
@@ -432,12 +438,15 @@ class CompleteCallbackView(APIView):
             if not all([click_trans_id, merchant_trans_id, merchant_prepare_id is not None, amount is not None, action is not None, sign_time, sign_string]):
                 return Response({"error": -3, "error_note": "Missing required fields"}, status=400)
 
-            expected = make_sign(
-                click_trans_id, service_id,
-                _get_service_secret(), merchant_trans_id,
-                merchant_prepare_id, amount,
-                action, sign_time,
-            )
+            try:
+                expected = make_sign(
+                    click_trans_id, service_id,
+                    _get_service_secret(), merchant_trans_id,
+                    merchant_prepare_id, amount,
+                    action, sign_time,
+                )
+            except ImproperlyConfigured:
+                return Response({"error": -1, "error_note": "Payment service not configured"}, status=503)
             if not hmac.compare_digest(expected, str(sign_string)):
                 return Response({"error": -1, "error_note": "SIGN CHECK FAILED"}, status=400)
 
