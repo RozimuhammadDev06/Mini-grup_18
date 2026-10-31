@@ -189,6 +189,19 @@ class FintechProxy(APIView):
     path = None
 
     def post(self, request):
+        authorization = request.headers.get("Authorization")
+        if not authorization:
+            return Response(
+                {
+                    "error": (
+                        "FintechHub Authorization header is required. "
+                        "Log in through /api/payments/login/ and retry with "
+                        "the returned token as a Bearer token."
+                    )
+                },
+                status=401,
+            )
+
         body = {k: v for k, v in request.data.items()}
         body["service_id"] = int(settings.FHP_SERVICE_ID)
         try:
@@ -196,7 +209,7 @@ class FintechProxy(APIView):
                 "POST",
                 self.path,
                 json_data=body,
-                authorization=request.headers.get("Authorization"),
+                authorization=authorization,
             )
         except requests.exceptions.Timeout:
             return Response({"error": "Fintechhub javob bermadi (timeout)"}, status=504)
@@ -226,6 +239,7 @@ class PayInitView(FintechProxy):
         },
         responses={
             200: OpenApiResponse(description="Payment init response."),
+            401: OpenApiResponse(description="FintechHub authorization is required."),
             502: OpenApiResponse(description="FintechHub connection error."),
         },
         tags=["Payments"],
@@ -251,6 +265,7 @@ class CardRequestView(FintechProxy):
         },
         responses={
             200: OpenApiResponse(description="Card token request response."),
+            401: OpenApiResponse(description="FintechHub authorization is required."),
             502: OpenApiResponse(description="FintechHub connection error."),
         },
         tags=["Payments"],
@@ -275,6 +290,7 @@ class CardVerifyView(FintechProxy):
         },
         responses={
             200: OpenApiResponse(description="Card verification response."),
+            401: OpenApiResponse(description="FintechHub authorization is required."),
             502: OpenApiResponse(description="FintechHub connection error."),
         },
         tags=["Payments"],
@@ -299,6 +315,7 @@ class CardPaymentView(FintechProxy):
         },
         responses={
             200: OpenApiResponse(description="Card payment response."),
+            401: OpenApiResponse(description="FintechHub authorization is required."),
             502: OpenApiResponse(description="FintechHub connection error."),
         },
         tags=["Payments"],

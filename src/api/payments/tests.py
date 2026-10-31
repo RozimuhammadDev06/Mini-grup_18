@@ -151,6 +151,27 @@ class PaymentLoginRouteTests(TestCase):
 class CardPaymentProxyTests(TestCase):
     @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
     @patch("api.payments.clients.requests.request")
+    def test_card_request_without_authorization_returns_actionable_error(
+        self,
+        upstream_request,
+    ):
+        response = APIClient().post(
+            "/api/payments/card/request/",
+            {
+                "card_number": "4111111111111111",
+                "expiry": "12/30",
+                "amount": 25,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertIn("Authorization header is required", response.data["error"])
+        self.assertIn("/api/payments/login/", response.data["error"])
+        upstream_request.assert_not_called()
+
+    @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
+    @patch("api.payments.clients.requests.request")
     def test_pythonanywhere_outbound_block_has_actionable_error(
         self,
         upstream_request,
