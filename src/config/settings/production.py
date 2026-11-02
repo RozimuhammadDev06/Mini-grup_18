@@ -18,7 +18,9 @@ FHP_SERVICE_SECRET_KEY = (
 #     third-parties
 # ]
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+if "fixingtools.pythonanywhere.com" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("fixingtools.pythonanywhere.com")
 
 MIDDLEWARE += ['corsheaders.middleware.CorsMiddleware', ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
@@ -46,5 +48,7 @@ SIMPLE_JWT = {
 }
 
 
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in env("CSRF_TRUSTED_ORIGINS").split(",")]
-CORS_ALLOWED_ORIGINS = [o.strip() for o in env("CORS_ALLOWED_ORIGINS").split(",")]
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
+if "https://fixingtools.pythonanywhere.com" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append("https://fixingtools.pythonanywhere.com")
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
