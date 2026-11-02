@@ -296,6 +296,10 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_PATCH": True,
     "COMPONENT_NO_READ_ONLY_REQUIRED": True,
     "SCHEMA_PATH_PREFIX": r"/api/",
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "config.schema_hooks.add_relevant_response_links",
+    ],
 }
 
 
