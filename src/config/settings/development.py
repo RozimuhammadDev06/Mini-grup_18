@@ -13,15 +13,11 @@ DEBUG = False
 FHP_BASE_URL = "http://159.223.145.49:3079"
 FHP_TIMEOUT = 20
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "fixingtools.pythonanywhere.com",
-]
+ALLOWED_HOSTS = ["13.49.245.195", "localhost", "127.0.0.1"]
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://fixingtools.pythonanywhere.com",
+    "13.49.245.195",
 ]
 
 
