@@ -13,7 +13,7 @@ load_dotenv()
 
 @lru_cache(maxsize=1)
 def get_client() -> genai.Client:
-    api_key = os.getenv("AQ.Ab8RN6L_2tYYcz1oHgn9JCA_K9V8bbNYQcAj0rLgtLpLskx8K")
+    api_key = os.getenv("AQ.Ab8RN6L_2tYYcz1oHgn9JCA_K9V8bbNYQcAj0rLgtLpLskx8K") or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
     if not api_key:
         raise RuntimeError(
@@ -25,7 +25,7 @@ def get_client() -> genai.Client:
 
 
 # Multimodal models that support image input, in order of preference
-MULTIMODAL_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+MULTIMODAL_MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro"]
 TEXT_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
 
 
@@ -114,28 +114,29 @@ def send_to_ai(
 
     # All multimodal models failed — try text-only fallback
     if image is not None and user_message and str(user_message).strip():
-        try:
-            response = get_client().models.generate_content(
-                model=models_to_try[0],
-                contents=[types.Part.from_text(str(user_message))],
-                config=types.GenerateContentConfig(
-                    system_instruction=(
-                        "You are a helpful customer service assistant "
-                        "for Muhammadsodiq's project."
+        for model_name in ["gemini-2.0-flash", "gemini-1.5-flash"]:
+            try:
+                response = get_client().models.generate_content(
+                    model=model_name,
+                    contents=[types.Part.from_text(str(user_message))],
+                    config=types.GenerateContentConfig(
+                        system_instruction=(
+                            "You are a helpful customer service assistant "
+                            "for Muhammadsodiq's project."
+                        ),
                     ),
-                ),
-            )
-            text = response.text or ""
-            if text and "cannot read" not in text.lower() and "does not support image" not in text.lower():
-                return text
-        except Exception:
-            pass
+                )
+                text = response.text or ""
+                if text and "cannot read" not in text.lower() and "does not support image" not in text.lower():
+                    return f"(Image input not supported by the current model) {text}"
+            except Exception:
+                continue
 
     # All models failed
     if last_error is not None:
         raise RuntimeError(
             "No available Gemini model supports image input. "
-            "Send text only or use a multimodal model (e.g. gemini-2.0-flash)."
+            "Please send text only."
         ) from last_error
     raise RuntimeError("AI request failed.")
 
