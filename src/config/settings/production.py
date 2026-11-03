@@ -23,7 +23,6 @@ if "fixingtools.pythonanywhere.com" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("fixingtools.pythonanywhere.com")
 
 MIDDLEWARE += ['corsheaders.middleware.CorsMiddleware', ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 SIMPLE_JWT = {
