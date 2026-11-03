@@ -32,6 +32,19 @@ python manage.py runserver
 
 ```
 
+### 3. Production serverda statik fayllar
+
+Admin sahifasidagi CSS va rasmlarni chiqarish uchun WhiteNoise ishlatiladi.
+Production serverda paketlarni o'rnatgandan va kodni yangilagandan so'ng:
+
+```bash
+pip install -r requirements/production.txt
+python manage.py collectstatic --noinput
+```
+
+`collectstatic` fayllarni `staticfiles/` papkasiga yig'adi; WhiteNoise ularni
+`/static/` manzili orqali serverlaydi.
+
 ---
 
 ### 🛠 Postman konfiguratsiyasi
