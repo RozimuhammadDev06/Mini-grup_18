@@ -177,8 +177,6 @@ USE_TZ = False
 STATIC_URL = "/static/"
 
 # collectstatic fayllarni shu papkaga yig‘adi
-# PythonAnywhere uchun:
-# /home/FixingTools/Mini-grup_18/staticfiles/
 STATIC_ROOT = os.path.join(
     BASE_DIR,
     "staticfiles",

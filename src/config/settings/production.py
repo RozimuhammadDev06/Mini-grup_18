@@ -19,8 +19,8 @@ FHP_SERVICE_SECRET_KEY = (
 # ]
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
-if "fixingtools.pythonanywhere.com" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("fixingtools.pythonanywhere.com")
+if "13.49.245.195" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("13.49.245.195")
 
 MIDDLEWARE += ['corsheaders.middleware.CorsMiddleware', ]
 
@@ -48,6 +48,8 @@ SIMPLE_JWT = {
 
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
-if "https://fixingtools.pythonanywhere.com" not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append("https://fixingtools.pythonanywhere.com")
+if "http://13.49.245.195" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append("http://13.49.245.195")
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS")
+if "http://13.49.245.195" not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append("http://13.49.245.195")

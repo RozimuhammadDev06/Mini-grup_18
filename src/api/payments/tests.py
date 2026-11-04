@@ -201,7 +201,7 @@ class CardPaymentProxyTests(TestCase):
 
     @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
     @patch("api.payments.clients.requests.request")
-    def test_pythonanywhere_outbound_block_has_actionable_error(
+    def test_hosting_provider_outbound_block_has_actionable_error(
         self,
         upstream_request,
     ):
@@ -210,7 +210,7 @@ class CardPaymentProxyTests(TestCase):
         upstream_response.text = (
             "<HTML><h1>Access Denied</h1>"
             "<p>Access to arbitrary websites is not available from free "
-            "accounts; see pythonanywhere.com/whitelist</p></HTML>"
+            "accounts; see the provider whitelist</p></HTML>"
         )
         upstream_response.status_code = 200
         upstream_response.headers = {"Content-Type": "text/html"}
@@ -224,7 +224,7 @@ class CardPaymentProxyTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 502)
-        self.assertIn("PythonAnywhere blocked", response.data["error"])
+        self.assertIn("hosting provider blocked", response.data["error"])
         self.assertEqual(response.data["upstream_status"], 200)
         self.assertEqual(response.data["upstream_content_type"], "text/html")
         self.assertNotIn("raw", response.data)
