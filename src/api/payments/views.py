@@ -44,12 +44,12 @@ def _upstream_non_json_error(response):
     if (
         "access to arbitrary websites is not available from free accounts"
         in response_text
-        and "pythonanywhere.com/whitelist" in response_text
+        and "whitelist" in response_text
     ):
         message = (
-            "PythonAnywhere blocked this server's outbound request. "
-            "Ask PythonAnywhere to allowlist the payment provider's official "
-            "API hostname, or deploy on a host that permits outbound access."
+            "The hosting provider blocked this server's outbound request. "
+            "Ask the provider to allowlist the payment API hostname, or use "
+            "a host that permits outbound access."
         )
     else:
         message = "Payment provider returned a non-JSON response."

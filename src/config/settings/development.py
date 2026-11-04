@@ -14,7 +14,6 @@ FHP_BASE_URL = "http://159.223.145.49:3079"
 FHP_TIMEOUT = 20
 
 ALLOWED_HOSTS = [
-    "fixingtools.pythonanywhere.com",
     "13.49.245.195",
     "localhost",
     "127.0.0.1",
@@ -22,7 +21,6 @@ ALLOWED_HOSTS = [
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://fixingtools.pythonanywhere.com",
     "http://13.49.245.195",
 ]
 
@@ -100,5 +98,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://fixingtools.pythonanywhere.com",
+    "http://13.49.245.195",
 ]
