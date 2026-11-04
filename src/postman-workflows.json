@@ -817,7 +817,44 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "FintechHub payment",
+      "item": [
+        {
+          "name": "Register payment account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"your-email@example.com\",\n    \"password\": \"replace-with-a-strong-password\",\n    \"full_name\": \"Your Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{payment_url}}/register/",
+              "host": [
+                "{{payment_url}}"
+              ],
+              "path": [
+                "register",
+                ""
+              ]
+            },
+            "description": "Register an account with the payment provider. Use POST; credentials must be sent in the JSON body."
+          },
+          "response": []
+        }
+      ]
     }
   ]
-  
 }

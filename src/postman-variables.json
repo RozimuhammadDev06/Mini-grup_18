@@ -9,6 +9,12 @@
 			"enabled": true
 		},
 		{
+			"key": "payment_url",
+			"value": "http://13.49.245.195/api/payments",
+			"type": "default",
+			"enabled": true
+		},
+		{
 			"key": "access_token",
 			"value": "",
 			"type": "any",

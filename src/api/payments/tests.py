@@ -147,6 +147,35 @@ class PaymentLoginRouteTests(TestCase):
             post.call_args.args[0].endswith("/api/auth/login/"),
         )
 
+    @patch("api.payments.views.requests.post")
+    def test_register_requires_post_and_forwards_json_body(self, post):
+        upstream_response = Mock()
+        upstream_response.json.return_value = {"message": "Registered"}
+        upstream_response.status_code = 201
+        post.return_value = upstream_response
+        payload = {
+            "email": "user@example.com",
+            "password": "not-a-real-password",
+            "full_name": "Example User",
+        }
+
+        get_response = self.client.get("/api/payments/register/")
+        self.assertEqual(get_response.status_code, 405)
+        post.assert_not_called()
+
+        response = self.client.post(
+            "/api/payments/register/",
+            payload,
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json(), {"message": "Registered"})
+        self.assertTrue(
+            post.call_args.args[0].endswith("/api/auth/register/"),
+        )
+        self.assertEqual(post.call_args.kwargs["json"], payload)
+
 
 class CardPaymentProxyTests(TestCase):
     @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
