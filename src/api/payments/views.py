@@ -36,7 +36,12 @@ from rest_framework.views import APIView
 from apps.magazin.models import Order
 
 from api.payments.clients import FintechhubClient
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
 
 
 def _upstream_non_json_error(response):
@@ -257,14 +262,58 @@ class CardRequestView(FintechProxy):
                 "type": "object",
                 "properties": {
                     "card_number": {"type": "string"},
-                    "expiry": {"type": "string"},
-                    "amount": {"type": "number"},
+                    "expire_date": {
+                        "type": "string",
+                        "example": "1228",
+                    },
+                    "temporary": {
+                        "type": "boolean",
+                        "default": False,
+                    },
                 },
-                "required": ["card_number", "expiry", "amount"],
+                "required": ["card_number", "expire_date"],
             },
         },
+        examples=[
+            OpenApiExample(
+                "Request card token",
+                value={
+                    "card_number": "8600123456789012",
+                    "expire_date": "1228",
+                    "temporary": False,
+                },
+                request_only=True,
+            ),
+        ],
+        parameters=[
+            OpenApiParameter(
+                name="Authorization",
+                type=str,
+                location=OpenApiParameter.HEADER,
+                required=True,
+                description="FintechHub token returned by /api/payments/login/.",
+            ),
+        ],
         responses={
-            200: OpenApiResponse(description="Card token request response."),
+            200: OpenApiResponse(
+                description="Card token and OTP response.",
+                examples=[
+                    OpenApiExample(
+                        "Card token requested",
+                        value={
+                            "error_code": 0,
+                            "error_note": "Success",
+                            "card_token": "example-card-token",
+                            "phone_number": "",
+                            "temporary": False,
+                            "card_number": "860012******9012",
+                            "otp": "123456",
+                        },
+                        response_only=True,
+                        status_codes=["200"],
+                    ),
+                ],
+            ),
             401: OpenApiResponse(description="FintechHub authorization is required."),
             502: OpenApiResponse(description="FintechHub connection error."),
         },
@@ -288,6 +337,15 @@ class CardVerifyView(FintechProxy):
                 "required": ["card_token", "otp"],
             },
         },
+        parameters=[
+            OpenApiParameter(
+                name="Authorization",
+                type=str,
+                location=OpenApiParameter.HEADER,
+                required=True,
+                description="FintechHub token returned by /api/payments/login/.",
+            ),
+        ],
         responses={
             200: OpenApiResponse(description="Card verification response."),
             401: OpenApiResponse(description="FintechHub authorization is required."),
@@ -313,6 +371,15 @@ class CardPaymentView(FintechProxy):
                 "required": ["card_token", "amount"],
             },
         },
+        parameters=[
+            OpenApiParameter(
+                name="Authorization",
+                type=str,
+                location=OpenApiParameter.HEADER,
+                required=True,
+                description="FintechHub token returned by /api/payments/login/.",
+            ),
+        ],
         responses={
             200: OpenApiResponse(description="Card payment response."),
             401: OpenApiResponse(description="FintechHub authorization is required."),
