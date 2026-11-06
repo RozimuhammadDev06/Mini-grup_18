@@ -195,12 +195,14 @@ class FintechProxy(APIView):
     base_url_setting = "FHP_BASE_URL"
 
     def post(self, request):
-        authorization = request.headers.get("Authorization")
+        authorization = request.headers.get("Auth") or request.headers.get(
+            "Authorization",
+        )
         if not authorization:
             return Response(
                 {
                     "error": (
-                        "FintechHub Authorization header is required. "
+                        "FintechHub Auth header is required. "
                         "Log in through /api/payments/login/ and retry with "
                         "the returned token as a Bearer token."
                     )
@@ -264,6 +266,18 @@ class PayInitView(FintechProxy):
                 request_only=True,
             ),
         ],
+        parameters=[
+            OpenApiParameter(
+                name="Auth",
+                type=str,
+                location=OpenApiParameter.HEADER,
+                required=True,
+                description=(
+                    "FintechHub token returned by /api/payments/login/. "
+                    "Send it in the Auth header."
+                ),
+            ),
+        ],
         responses={
             200: OpenApiResponse(description="Payment init response."),
             401: OpenApiResponse(description="FintechHub authorization is required."),
@@ -314,11 +328,14 @@ class CardRequestView(FintechProxy):
         ],
         parameters=[
             OpenApiParameter(
-                name="Authorization",
+                name="Auth",
                 type=str,
                 location=OpenApiParameter.HEADER,
                 required=True,
-                description="FintechHub token returned by /api/payments/login/.",
+                description=(
+                    "FintechHub token returned by /api/payments/login/. "
+                    "Send it in the Auth header."
+                ),
             ),
         ],
         responses={
@@ -371,11 +388,14 @@ class CardVerifyView(FintechProxy):
         },
         parameters=[
             OpenApiParameter(
-                name="Authorization",
+                name="Auth",
                 type=str,
                 location=OpenApiParameter.HEADER,
                 required=True,
-                description="FintechHub token returned by /api/payments/login/.",
+                description=(
+                    "FintechHub token returned by /api/payments/login/. "
+                    "Send it in the Auth header."
+                ),
             ),
         ],
         responses={
@@ -410,11 +430,14 @@ class CardPaymentView(FintechProxy):
         },
         parameters=[
             OpenApiParameter(
-                name="Authorization",
+                name="Auth",
                 type=str,
                 location=OpenApiParameter.HEADER,
                 required=True,
-                description="FintechHub token returned by /api/payments/login/.",
+                description=(
+                    "FintechHub token returned by /api/payments/login/. "
+                    "Send it in the Auth header."
+                ),
             ),
         ],
         responses={

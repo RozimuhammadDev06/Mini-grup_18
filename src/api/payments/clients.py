@@ -26,7 +26,7 @@ class FintechhubClient:
             "Content-Type": "application/json",
         }
         if authorization:
-            headers["Authorization"] = authorization
+            headers["Auth"] = authorization
 
         return requests.request(
             method=method,
