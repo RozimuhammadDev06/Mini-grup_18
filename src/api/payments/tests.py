@@ -244,6 +244,25 @@ class CardPaymentProxyTests(TestCase):
                 ]["post"]["parameters"]
             },
         )
+        auth_parameter = next(
+            parameter
+            for parameter in schema["paths"][
+                "/api/v2/merchant/card_token/request"
+            ]["post"]["parameters"]
+            if parameter["name"] == "Auth"
+        )
+        self.assertIn(
+            "auth_header",
+            auth_parameter["description"],
+        )
+        self.assertEqual(
+            auth_parameter["examples"]["FintechHubAuthValue"]["value"],
+            "replace-with-your-FintechHub-auth-value",
+        )
+        login_description = schema["paths"]["/api/payments/login/"]["post"][
+            "description"
+        ]
+        self.assertIn("does not automatically set the Auth header", login_description)
         pay_init_schema = schema["paths"]["/api/v2/pay/init"]["post"]
         pay_init_properties = pay_init_schema["requestBody"]["content"][
             "application/json"

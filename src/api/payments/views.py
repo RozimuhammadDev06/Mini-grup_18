@@ -67,6 +67,11 @@ def _upstream_non_json_error(response):
 
 
 @extend_schema(
+    description=(
+        "Forwards credentials to FintechHub login. This endpoint does not "
+        "automatically set the Auth header for subsequent payment requests; "
+        "provide the provider-required value separately in the Auth header."
+    ),
     request={
         "application/json": {
             "type": "object",
@@ -88,7 +93,10 @@ def _upstream_non_json_error(response):
     },
     responses={
         200: OpenApiResponse(
-            description="FintechHub login response.",
+            description=(
+                "FintechHub login response. Use the provider-required value "
+                "in the Auth header for payment requests."
+            ),
         ),
         400: OpenApiResponse(
             description="Invalid login data.",
@@ -273,9 +281,18 @@ class PayInitView(FintechProxy):
                 location=OpenApiParameter.HEADER,
                 required=True,
                 description=(
-                    "FintechHub token returned by /api/payments/login/. "
-                    "Send it in the Auth header."
+                    "Required header name is exactly `Auth`. In Postman, "
+                    "set the `auth_header` collection/environment variable "
+                    "to the value required by FintechHub and send that value "
+                    "as this header. Replace this placeholder with the "
+                    "provider-issued value when trying the request here."
                 ),
+                examples=[
+                    OpenApiExample(
+                        "FintechHub Auth value",
+                        value="replace-with-your-FintechHub-auth-value",
+                    ),
+                ],
             ),
         ],
         responses={
@@ -333,9 +350,18 @@ class CardRequestView(FintechProxy):
                 location=OpenApiParameter.HEADER,
                 required=True,
                 description=(
-                    "FintechHub token returned by /api/payments/login/. "
-                    "Send it in the Auth header."
+                    "Required header name is exactly `Auth`. In Postman, "
+                    "set the `auth_header` collection/environment variable "
+                    "to the value required by FintechHub and send that value "
+                    "as this header. Replace this placeholder with the "
+                    "provider-issued value when trying the request here."
                 ),
+                examples=[
+                    OpenApiExample(
+                        "FintechHub Auth value",
+                        value="replace-with-your-FintechHub-auth-value",
+                    ),
+                ],
             ),
         ],
         responses={
@@ -393,9 +419,18 @@ class CardVerifyView(FintechProxy):
                 location=OpenApiParameter.HEADER,
                 required=True,
                 description=(
-                    "FintechHub token returned by /api/payments/login/. "
-                    "Send it in the Auth header."
+                    "Required header name is exactly `Auth`. In Postman, "
+                    "set the `auth_header` collection/environment variable "
+                    "to the value required by FintechHub and send that value "
+                    "as this header. Replace this placeholder with the "
+                    "provider-issued value when trying the request here."
                 ),
+                examples=[
+                    OpenApiExample(
+                        "FintechHub Auth value",
+                        value="replace-with-your-FintechHub-auth-value",
+                    ),
+                ],
             ),
         ],
         responses={
@@ -435,9 +470,18 @@ class CardPaymentView(FintechProxy):
                 location=OpenApiParameter.HEADER,
                 required=True,
                 description=(
-                    "FintechHub token returned by /api/payments/login/. "
-                    "Send it in the Auth header."
+                    "Required header name is exactly `Auth`. In Postman, "
+                    "set the `auth_header` collection/environment variable "
+                    "to the value required by FintechHub and send that value "
+                    "as this header. Replace this placeholder with the "
+                    "provider-issued value when trying the request here."
                 ),
+                examples=[
+                    OpenApiExample(
+                        "FintechHub Auth value",
+                        value="replace-with-your-FintechHub-auth-value",
+                    ),
+                ],
             ),
         ],
         responses={
