@@ -2,6 +2,7 @@ from decimal import Decimal
 from unittest.mock import Mock, patch
 
 from django.test import TestCase, override_settings
+from drf_spectacular.generators import SchemaGenerator
 from rest_framework.test import APIClient
 
 from apps.magazin.models import Order
@@ -178,6 +179,95 @@ class PaymentLoginRouteTests(TestCase):
 
 
 class CardPaymentProxyTests(TestCase):
+    @override_settings(
+        FHP_BASE_URL="http://fintech.example:3077",
+        FHP_SERVICE_ID=1,
+    )
+    @patch("api.payments.clients.requests.request")
+    def test_postman_card_request_url_is_available_in_proxy_and_swagger(
+        self,
+        upstream_request,
+    ):
+        upstream_response = Mock()
+        upstream_response.json.return_value = {"card_token": "test-token"}
+        upstream_response.status_code = 200
+        upstream_request.return_value = upstream_response
+
+        response = APIClient().post(
+            "/api/v2/merchant/card_token/request",
+            {
+                "card_number": "4111111111111111",
+                "expire_date": "1228",
+                "temporary": False,
+            },
+            format="json",
+            HTTP_AUTHORIZATION="Bearer test-token",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            upstream_request.call_args.kwargs["url"],
+            "http://fintech.example:3077/api/v2/merchant/card_token/request",
+        )
+        self.assertEqual(
+            upstream_request.call_args.kwargs["json"],
+            {
+                "card_number": "4111111111111111",
+                "expire_date": "1228",
+                "temporary": False,
+                "service_id": 1,
+            },
+        )
+        schema = SchemaGenerator().get_schema(public=True)
+        self.assertIn(
+            "/api/v2/merchant/card_token/request",
+            schema["paths"],
+        )
+        self.assertIn("/api/v2/pay/init", schema["paths"])
+        self.assertIn(
+            "/api/v2/merchant/card_token/request",
+            schema["paths"]["/api/v2/merchant/card_token/request"]["post"][
+                "description"
+            ],
+        )
+        pay_init_schema = schema["paths"]["/api/v2/pay/init"]["post"]
+        pay_init_properties = pay_init_schema["requestBody"]["content"][
+            "application/json"
+        ]["schema"]["properties"]
+        self.assertIn("phone_number", pay_init_properties)
+        self.assertIn("return_url", pay_init_properties)
+
+    @override_settings(
+        FHP_BASE_URL="http://fintech.example:3077",
+        FHP_PAY_INIT_BASE_URL="http://fintech.example:3079",
+        FHP_SERVICE_ID=1,
+    )
+    @patch("api.payments.clients.requests.request")
+    def test_postman_pay_init_uses_3079_upstream(
+        self,
+        upstream_request,
+    ):
+        upstream_response = Mock()
+        upstream_response.json.return_value = {"success": True}
+        upstream_response.status_code = 200
+        upstream_request.return_value = upstream_response
+
+        response = APIClient().post(
+            "/api/v2/pay/init",
+            {
+                "amount": 25,
+                "merchant_trans_id": "test-order",
+            },
+            format="json",
+            HTTP_AUTHORIZATION="Bearer test-token",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            upstream_request.call_args.kwargs["url"],
+            "http://fintech.example:3079/api/v2/pay/init",
+        )
+
     @override_settings(FHP_BASE_URL="http://fintech.example", FHP_SERVICE_ID=1)
     @patch("api.payments.clients.requests.request")
     def test_card_request_without_authorization_returns_actionable_error(
