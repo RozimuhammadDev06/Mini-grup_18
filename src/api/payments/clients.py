@@ -4,8 +4,8 @@ from django.conf import settings
 
 
 class FintechhubClient:
-    def __init__(self ):
-        self.base_url = settings.FHP_BASE_URL.rstrip("/")
+    def __init__(self, base_url=None):
+        self.base_url = (base_url or settings.FHP_BASE_URL).rstrip("/")
         self.timeout = getattr(
             settings,
             "FHP_TIMEOUT",

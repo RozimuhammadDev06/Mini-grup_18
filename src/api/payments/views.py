@@ -192,6 +192,7 @@ class FintechProxy(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
     path = None
+    base_url_setting = "FHP_BASE_URL"
 
     def post(self, request):
         authorization = request.headers.get("Authorization")
@@ -210,7 +211,10 @@ class FintechProxy(APIView):
         body = {k: v for k, v in request.data.items()}
         body["service_id"] = int(settings.FHP_SERVICE_ID)
         try:
-            resp = FintechhubClient().request(
+            client = FintechhubClient(
+                base_url=getattr(settings, self.base_url_setting),
+            )
+            resp = client.request(
                 "POST",
                 self.path,
                 json_data=body,
@@ -229,19 +233,37 @@ class FintechProxy(APIView):
 
 class PayInitView(FintechProxy):
     path = "/api/v2/pay/init"
+    base_url_setting = "FHP_PAY_INIT_BASE_URL"
 
     @extend_schema(
+        description=(
+            "Forwards to FintechHub POST "
+            f"`{settings.FHP_PAY_INIT_BASE_URL}/api/v2/pay/init`."
+        ),
         request={
             "application/json": {
                 "type": "object",
                 "properties": {
                     "amount": {"type": "number"},
                     "merchant_trans_id": {"type": "string"},
-                    "user_id": {"type": "integer"},
+                    "phone_number": {"type": "string"},
+                    "return_url": {"type": "string", "format": "uri"},
                 },
                 "required": ["amount", "merchant_trans_id"],
             },
         },
+        examples=[
+            OpenApiExample(
+                "Initialize payment",
+                value={
+                    "amount": 25000,
+                    "merchant_trans_id": "order-123",
+                    "phone_number": "998901234567",
+                    "return_url": "https://example.com/payment/complete",
+                },
+                request_only=True,
+            ),
+        ],
         responses={
             200: OpenApiResponse(description="Payment init response."),
             401: OpenApiResponse(description="FintechHub authorization is required."),
@@ -257,6 +279,11 @@ class CardRequestView(FintechProxy):
     path = "/api/v2/merchant/card_token/request"
 
     @extend_schema(
+        description=(
+            "Forwards to FintechHub POST "
+            f"`{settings.FHP_BASE_URL.rstrip('/')}"
+            "/api/v2/merchant/card_token/request`."
+        ),
         request={
             "application/json": {
                 "type": "object",
@@ -327,6 +354,11 @@ class CardVerifyView(FintechProxy):
     path = "/api/v2/merchant/card_token/verify"
 
     @extend_schema(
+        description=(
+            "Forwards to FintechHub POST "
+            f"`{settings.FHP_BASE_URL.rstrip('/')}"
+            "/api/v2/merchant/card_token/verify`."
+        ),
         request={
             "application/json": {
                 "type": "object",
@@ -361,6 +393,11 @@ class CardPaymentView(FintechProxy):
     path = "/api/v2/merchant/card_token/payment"
 
     @extend_schema(
+        description=(
+            "Forwards to FintechHub POST "
+            f"`{settings.FHP_BASE_URL.rstrip('/')}"
+            "/api/v2/merchant/card_token/payment`."
+        ),
         request={
             "application/json": {
                 "type": "object",

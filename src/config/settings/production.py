@@ -3,7 +3,7 @@ from datetime import timedelta
 
 FHP_BASE_URL = env(
     "FHP_BASE_URL",
-    default=FINTECHHUB_BASE_URL,
+    default="http://159.223.145.49:3077",
 )
 FHP_SERVICE_ID = env.int(
     "FHP_SERVICE_ID",

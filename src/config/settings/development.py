@@ -10,7 +10,6 @@ from .base import *
 
 DEBUG = False
 
-FHP_BASE_URL = "http://159.223.145.49:3079"
 FHP_TIMEOUT = 20
 
 ALLOWED_HOSTS = [

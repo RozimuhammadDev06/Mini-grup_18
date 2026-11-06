@@ -450,8 +450,13 @@ FINTECHHUB_RETURN_URL = env(
 
 FHP_BASE_URL = env(
     "FHP_BASE_URL",
-    default=FINTECHHUB_BASE_URL,
+    default="http://159.223.145.49:3077",
  )
+
+FHP_PAY_INIT_BASE_URL = env(
+    "FHP_PAY_INIT_BASE_URL",
+    default="http://159.223.145.49:3079",
+).rstrip("/")
 
 FHP_SERVICE_ID = env.int(
     "FHP_SERVICE_ID",

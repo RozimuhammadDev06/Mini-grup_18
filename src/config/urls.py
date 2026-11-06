@@ -8,6 +8,12 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from api.payments.views import (
+    CardPaymentView,
+    CardRequestView,
+    CardVerifyView,
+    PayInitView,
+)
 
 urlpatterns = [
     path(
@@ -35,6 +41,26 @@ urlpatterns = [
     path(
         "api/payments/",
         include("api.payments.urls"),
+    ),
+    path(
+        "api/v2/pay/init",
+        PayInitView.as_view(),
+        name="fintech-pay-init",
+    ),
+    path(
+        "api/v2/merchant/card_token/request",
+        CardRequestView.as_view(),
+        name="fintech-card-token-request",
+    ),
+    path(
+        "api/v2/merchant/card_token/verify",
+        CardVerifyView.as_view(),
+        name="fintech-card-token-verify",
+    ),
+    path(
+        "api/v2/merchant/card_token/payment",
+        CardPaymentView.as_view(),
+        name="fintech-card-token-payment",
     ),
 
     path(
