@@ -201,6 +201,7 @@ class CardPaymentProxyTests(TestCase):
                 "temporary": False,
             },
             format="json",
+            HTTP_AUTH="postman-token",
             HTTP_AUTHORIZATION="Bearer test-token",
         )
 
@@ -218,6 +219,10 @@ class CardPaymentProxyTests(TestCase):
                 "service_id": 1,
             },
         )
+        self.assertEqual(
+            upstream_request.call_args.kwargs["headers"]["Auth"],
+            "postman-token",
+        )
         schema = SchemaGenerator().get_schema(public=True)
         self.assertIn(
             "/api/v2/merchant/card_token/request",
@@ -230,6 +235,34 @@ class CardPaymentProxyTests(TestCase):
                 "description"
             ],
         )
+        self.assertIn(
+            "Auth",
+            {
+                parameter["name"]
+                for parameter in schema["paths"][
+                    "/api/v2/merchant/card_token/request"
+                ]["post"]["parameters"]
+            },
+        )
+        auth_parameter = next(
+            parameter
+            for parameter in schema["paths"][
+                "/api/v2/merchant/card_token/request"
+            ]["post"]["parameters"]
+            if parameter["name"] == "Auth"
+        )
+        self.assertIn(
+            "auth_header",
+            auth_parameter["description"],
+        )
+        self.assertEqual(
+            auth_parameter["examples"]["FintechHubAuthValue"]["value"],
+            "replace-with-your-FintechHub-auth-value",
+        )
+        login_description = schema["paths"]["/api/payments/login/"]["post"][
+            "description"
+        ]
+        self.assertIn("does not automatically set the Auth header", login_description)
         pay_init_schema = schema["paths"]["/api/v2/pay/init"]["post"]
         pay_init_properties = pay_init_schema["requestBody"]["content"][
             "application/json"
@@ -285,7 +318,7 @@ class CardPaymentProxyTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertIn("Authorization header is required", response.data["error"])
+        self.assertIn("Auth header is required", response.data["error"])
         self.assertIn("/api/payments/login/", response.data["error"])
         upstream_request.assert_not_called()
 
@@ -341,6 +374,6 @@ class CardPaymentProxyTests(TestCase):
             "http://fintech.example/api/v2/merchant/card_token/payment",
         )
         self.assertEqual(
-            upstream_request.call_args.kwargs["headers"]["Authorization"],
+            upstream_request.call_args.kwargs["headers"]["Auth"],
             "Bearer upstream-token",
         )
